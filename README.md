@@ -14,12 +14,13 @@ cd ~/Downloads
 sudo chmod +x ./xc16-v1.24-full-install-linux-installer.run
 sudo ./xc16-v1.24-full-install-linux-installer.run
 ```
-
+##Build System
 To manage the compilation of multi-filed code, we will use Scons, a python based build system. This is a build system tool which will help automate compiation. To obtain Scons, type into a terminal: 
 ```bash
 sudo apt-get install scons
 ```
 
+##Cloning the Repository
 Next, let's get some code to put on our microcontroler. You can write your own code in C or, (recomended) clone [this](https://github.com/ETumang/elecanisms) or the [parent repository](https://github.com/OlinElecanisms/elecanisms). The best way to do this is with SSH keys. These manage security in a very unubiquitous way and are significantly more secure than HTTPS cloning. Aditionlly, using SSH prevents you from needing to authenticate with your git-hub credentials with every commit. However, either method will work, and if you only plan to pull code from the upstream, parent repository, it doesn't make much difference which method you use. If you plan to use SSH and don't already have SSH keys setup, GitHub has fantastic guides on how to [generate](https://help.github.com/articles/generating-ssh-keys/) and [use](https://help.github.com/articles/which-remote-url-should-i-use/#cloning-with-ssh) SSH keys for authentication. No mater your authentication method, getting the code is more or less the same:
 ```bash
 cd ~/__Folder_In_Which_you_Want_the_Repository__
@@ -36,6 +37,7 @@ cd
 git clone https://github.com/ETumang/elecanisms.git
 ```
 
+##Bootloader
 Now that we can compile our code into something that won't seem wacky to our microcontroler, let's try putting it on the board! To do this, we will use a bootloader. This is a Python build system with both GUI functionality and a command line interface. To install Scons, type into a command prompt:
 
 ##Loading Code to the Board
