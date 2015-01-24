@@ -37,6 +37,15 @@ cd
 git clone https://github.com/ETumang/elecanisms.git
 ```
 
+Now that we have the code, let's look at the code file we will be using. Our first task will be to upload the compiled result of blink.c. Blinking an LED is the embedded equivelent to printing 'Hellow World!' in other languagues and is a good starting point for making sure that all components of your system are functioning properly. For this, I will use the text editor nano because it's included with most distrabutions. Feel free to use another editor. Also, if you didn't clone the repository into your home folder, you will need to cd into that folder.
+```bash
+cd 
+cd elecanisms/blink
+nano blink.c
+```
+This should open up some C code in the terminal text editor, Nano. To close this, use the key sequence ctl+X,Y. Look at this code and make sure everything makes sense. 
+
+
 ##Bootloader
 Now that we can compile our code into something that won't seem wacky to our microcontroler, let's try putting it on the board! To do this, we will use a bootloader. This is a Python build system with both GUI functionality and a command line interface. To install Scons, type into a command prompt:
 
