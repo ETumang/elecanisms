@@ -5,7 +5,7 @@ Master repository for ENGR3199 includes C and Python source code and supporting 
 
 All instructions assume you're using a Debian derivative flavor of Linux, in our case Ubuntu. They have also been tested in Debian weasy. 
 
-For this project, we will use a microcontroler based on the PIC24FJ128GB206 designed by [Dr. Minch](https://github.com/bminch) at Olin College for [Elecanisms](http://elecanisms.olin.edu/). 
+For this project, we will use a microcontroller based on the PIC24FJ128GB206 designed by [Dr. Minch](https://github.com/bminch) at Olin College for [Elecanisms](http://elecanisms.olin.edu/). 
 
 ##Compiling
 In order to use our code, we must first compile it from our human readable code into something the microcontroler understands, in this case, a .hex file. The compiler we will use for this is a non-free fork of the GCC compiler. It can be obtained from [Microchip](http://www.microchip.com/pagehandler/en_us/devtools/mplabxc/). Download the ["MPLAB® XC16 Compiler v1.23"](http://www.microchip.com/mplabxc16linux). Newer is not always better, so don't grab v1.34! It will not work. Once the compiler has downloaded, open up a command prompt and type: 
@@ -74,7 +74,7 @@ cd
 git clone https://github.com/ETumang/elecanisms.git
 ```
 
-Now that we have the code, let's look at the code file we will be using. Our first task will be to upload the compiled result of blink.c. Blinking an LED is the embedded equivelent to printing 'Hellow World!' in other languagues and is a good starting point for making sure that all components of your system are functioning properly. For this, I will use the text editor nano because it's included with most distrabutions. Feel free to use another editor. Also, if you didn't clone the repository into your home folder, you will need to cd into that folder.
+Now that we have the code, let's look at the code file we will be using. Our first task will be to upload the compiled result of blink.c. Blinking an LED is the embedded equivalent to printing 'Hello World!' in other languagues and is a good starting point for making sure that all components of your system are functioning properly. For this, I will use the text editor nano because it's included with most distrabutions. Feel free to use another editor. Also, if you didn't clone the repository into your home folder, you will need to cd into that folder.
 ```bash
 cd 
 cd elecanisms/blink
@@ -87,9 +87,16 @@ This should open up some C code in the terminal text editor, Nano. To close this
 Now that we can compile our code into something that won't seem wacky to our microcontroler, let's try putting it on the board! To do this, we will use a bootloader. This is a Python build system with both GUI functionality and a command line interface. To install Scons, type into a command prompt:
 
 ##Loading Code to the Board
-First, grab the latest version of [pyusb](http://sourceforge.net/projects/pyusb/?source=typ_redirect) from Sourceforge. Once you have this, 
-```bash
-mv ~/Downloads/pyusb-1.0.0b2 ~/bin
-cd ~/bin/pyusb-1.0.0b2
-sudo python setup.py
-```
+Assuming you followed the previous instructions, you should be able to run the bootloader from elecanisms/bootloader/software.
+ ```bash
+ cd
+ cd elecanisms/bootloader/software
+ python bootloadergui.py
+ ```
+ should open this window //add screencap here
+ 
+ *Replacing "bootloadergui" with "bootloadercmd" in the above code opens a command-line version of the bootlaoder with the same functionality. This document will assume you are using the GUI.
+ 
+ As you can see from the above screenshot, the bootloader has not detected the board...which means it can't upload code. Do not panic! Reset the board by holding switch 1 (the one next to the red reset button) and pressing said red button. You should now see this //screencap
+ 
+ However, as you may have also noticed, the hex file to upload seems oddly uniform. That is because the hex file representing the blink code hasn't been loaded into the bootloader yet- the bootloader can be used for any compiled C file, and doesn't know which one to load automatically. To choose the file to load, click on the "File" button in the top left corner 
