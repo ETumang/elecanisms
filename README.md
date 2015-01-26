@@ -3,7 +3,7 @@ master
 
 Master repository for ENGR3199 includes C and Python source code and supporting files
 
-All instructions assume you're using a Debian derivative flavor of Linux, in our case Ubuntu. They have also been tested in Debian weasy. 
+All instructions assume you're using a Debian derivative flavor of Linux, in our case Ubuntu. They have also been tested in Debian wheezy. 
 
 For this project, we will use a microcontroller based on the PIC24FJ128GB206 designed by [Dr. Minch](https://github.com/bminch) at Olin College for [Elecanisms](http://elecanisms.olin.edu/). 
 
@@ -31,6 +31,18 @@ unzip pyusb-1.0.0b2.zip
 mv pyusb-1.0.0b2 ~/bin
 cd ~/bin/pyusb-1.0.0b2/
 sudo python setup.py install
+```
+
+Now let's see if the bootloader will work, at this point, it should, especially if you're using Ubuntu. If you're using Debian, you might still need to install a few extra Python moduials. In this guide, we will be using the graphical bootloader. To teest and see if it works:
+```bash
+cd ~/bootloader/software
+sudo python bootloadergui.py 
+```
+If everything worked well and was successfully installed, you should see your terminal think for a few seonds and then a graphical user interface should pop up. It should look like:
+![Image of the GUI Bootloader on startup](https://github.com/hmurraydavis/elecanisms/blob/master/blink/GUI_Bootloader_opens.jpg)
+If this workd for you, fantastic. If it gave you mean error messages, perhaps you'll need to install some of the python modules yourself. In my case python-tk was missing, so I installed it with: 
+```bash
+sudo apt-get install python-tk
 ```
 
 Now, since our board is not made by a vendor, we will need to grant the bootloader specific privledge to access it. We do this with:
@@ -97,10 +109,6 @@ Assuming you followed the previous instructions, you should be able to run the b
  
  *Replacing "bootloadergui" with "bootloadercmd" in the above code opens a command-line version of the bootlaoder with the same functionality. This document will assume you are using the GUI.
  
-If you plugged the board in before opening the bootloader, your bootloader will display the message "Could not connect...". Reset the board by holding switch 1 (the one next to the red reset button) and pressing said red button, then click "Connect" in the bootloader window. If you did not plug in the board before launching the bootlaoder, do so now and click "Connect". You should see this //screencap
+ As you can see from the above screenshot, the bootloader has not detected the board...which means it can't upload code. Do not panic! Reset the board by holding switch 1 (the one next to the red reset button) and pressing said red button. You should now see this //screencap
  
-However, the hex file to upload seems oddly uniform. That is because the hex file representing the blink code hasn't been loaded into the bootloader yet- the bootloader can be used for any compiled C file, and doesn't know which one to load automatically. To choose the file to load, click on "File" in the top left corner and choose the "Import Hex" option. A small window should pop up. Navigate to the "blink" folder and select blink.hex. Hit the "Open" button, closing the popup and loading blink.hex as the file to be uploaded to the board. 
-
-Finally, clck "Write" to actually upload the blink code. It should take a few seconds, and then display the confirmation message below \\screencap
-
-In order to test that the correct code was uploaded, you can either hit the board's red Reset button again, or click "Disconnect/Run" in the bootloader. You should see the three small LEDs on the board flashing in sequence from blue to green to red and then back to blue.  If you do, congratulations! 
+ However, as you may have also noticed, the hex file to upload seems oddly uniform. That is because the hex file representing the blink code hasn't been loaded into the bootloader yet- the bootloader can be used for any compiled C file, and doesn't know which one to load automatically. To choose the file to load, click on the "File" button in the top left corner 
