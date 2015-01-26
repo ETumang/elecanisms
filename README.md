@@ -46,7 +46,9 @@ cd ~/bootloader/software
 sudo python bootloadergui.py 
 ```
 If everything worked well and was successfully installed, you should see your terminal “think” for a few seconds and then a graphical user interface should pop up. It should look like:
+
 ![Image of the GUI Bootloader on startup](https://github.com/hmurraydavis/elecanisms/blob/master/blink/GUI_Bootloader_opens.jpg)
+
 If this worked for you, fantastic. If it gave you mean error messages, perhaps you'll need to install some of the python modules yourself. In my case python-tk was missing, so I installed it with: 
 ```bash
 sudo apt-get install python-tk
