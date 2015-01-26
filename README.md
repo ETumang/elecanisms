@@ -1,14 +1,14 @@
 master
 ======
 
-Master repository for ENGR3199 includes C and Python source code and supporting files
+Master repository for ENGR3199 including C and Python source code and supporting files
 
 All instructions assume you're using a Debian derivative flavor of Linux, in our case Ubuntu. They have also been tested in Debian wheezy. 
 
 For this project, we will use a microcontroller based on the PIC24FJ128GB206 designed by [Dr. Minch](https://github.com/bminch) at Olin College for [Elecanisms](http://elecanisms.olin.edu/). 
 
 ##Compiling
-In order to use our code, we must first compile it from our human readable code into something the microcontroler understands, in this case, a .hex file. The compiler we will use for this is a non-free fork of the GCC compiler. It can be obtained from [Microchip](http://www.microchip.com/pagehandler/en_us/devtools/mplabxc/). Download the ["MPLAB® XC16 Compiler v1.23"](http://www.microchip.com/mplabxc16linux). Newer is not always better, so don't grab v1.34! It will not work. Once the compiler has downloaded, open up a command prompt and type: 
+In order to use our code, we must first compile it from our human readable code into something the microcontroller understands, in this case, a .hex file. The compiler we will use for this is a non-free fork of the GCC compiler. It can be obtained from [Microchip](http://www.microchip.com/pagehandler/en_us/devtools/mplabxc/). Download the ["MPLAB® XC16 Compiler v1.23"](http://www.microchip.com/mplabxc16linux). Newer is not always better, so don't grab v1.34! It will not work. Once the compiler has downloaded, open up a command prompt and type: 
 ```bash
 cd ~/Downloads
 sudo chmod +x ./xc16-v1.24-full-install-linux-installer.run
@@ -33,19 +33,19 @@ cd ~/bin/pyusb-1.0.0b2/
 sudo python setup.py install
 ```
 
-Now let's see if the bootloader will work, at this point, it should, especially if you're using Ubuntu. If you're using Debian, you might still need to install a few extra Python moduials. In this guide, we will be using the graphical bootloader. To teest and see if it works:
+Now let's see if the bootloader will work, at this point, it should, especially if you're using Ubuntu. If you're using Debian, you might still need to install a few extra Python modules. In this guide, we will be using the graphical bootloader. To test and see if it works:
 ```bash
 cd ~/bootloader/software
 sudo python bootloadergui.py 
 ```
 If everything worked well and was successfully installed, you should see your terminal think for a few seonds and then a graphical user interface should pop up. It should look like:
 ![Image of the GUI Bootloader on startup](https://github.com/hmurraydavis/elecanisms/blob/master/blink/GUI_Bootloader_opens.jpg)
-If this workd for you, fantastic. If it gave you mean error messages, perhaps you'll need to install some of the python modules yourself. In my case python-tk was missing, so I installed it with: 
+If this worked for you, fantastic. If it gave you mean error messages, perhaps you'll need to install some of the python modules yourself. In my case python-tk was missing, so I installed it with: 
 ```bash
 sudo apt-get install python-tk
 ```
 
-Now, since our board is not made by a vendor, we will need to grant the bootloader specific privledge to access it. We do this with:
+Now, since our board is not made by a vendor, we will need to grant the bootloader specific privileges to access it. We do this with:
 ```bash 
 sudo nano /etc/udev/rules.d/usb_prototype_devices.rules
 ```
@@ -55,7 +55,7 @@ SUBSYSTEM=="usb", ATTRS{idVendor}=="6666", ATTRS{idProduct}=="4321", MODE=="0666
 SUBSYSTEM=="usb", ATTRS{idVendor}=="6666", ATTRS{idProduct}=="0003", MODE=="0666"
 ```
 
-Once we have the compiler, we need to edit the SConstruct file to reference this compiler. "cd" to the folder where you cloned the elecanisms repository, if you cloned it into your home directory, the below comands will work. 
+Once we have the compiler, we need to edit the SConstruct file to reference this compiler. "cd" to the folder where you cloned the elecanisms repository. If you cloned it into your home directory, the below comands will work. 
 
 ```bash
 cd
@@ -70,7 +70,7 @@ sudo apt-get install scons
 ```
 
 ##Cloning the Repository
-Next, let's get some code to put on our microcontroler. You can write your own code in C or, (recomended) clone [this](https://github.com/ETumang/elecanisms) or the [parent repository](https://github.com/OlinElecanisms/elecanisms). The best way to do this is with SSH keys. These manage security in a very unubiquitous way and are significantly more secure than HTTPS cloning. Aditionlly, using SSH prevents you from needing to authenticate with your git-hub credentials with every commit. However, either method will work, and if you only plan to pull code from the upstream, parent repository, it doesn't make much difference which method you use. If you plan to use SSH and don't already have SSH keys setup, GitHub has fantastic guides on how to [generate](https://help.github.com/articles/generating-ssh-keys/) and [use](https://help.github.com/articles/which-remote-url-should-i-use/#cloning-with-ssh) SSH keys for authentication. No mater your authentication method, getting the code is more or less the same:
+Next, let's get some code to put on our microcontroller. You can write your own code in C or, (recomended) clone [this](https://github.com/ETumang/elecanisms) or the [parent repository](https://github.com/OlinElecanisms/elecanisms). The best way to do this is with SSH keys. These manage security in a very unubiquitous way and are significantly more secure than HTTPS cloning. Aditionlly, using SSH prevents you from needing to authenticate with your git-hub credentials with every commit. However, either method will work, and if you only plan to pull code from the upstream, parent repository, it doesn't make much difference which method you use. If you plan to use SSH and don't already have SSH keys set up, GitHub has fantastic guides on how to [generate](https://help.github.com/articles/generating-ssh-keys/) and [use](https://help.github.com/articles/which-remote-url-should-i-use/#cloning-with-ssh) SSH keys for authentication. No mater your authentication method, getting the code is more or less the same:
 ```bash
 cd ~/__Folder_In_Which_you_Want_the_Repository__
 git clone __URL_OR_REPOSITORY__
@@ -86,7 +86,7 @@ cd
 git clone https://github.com/ETumang/elecanisms.git
 ```
 
-Now that we have the code, let's look at the code file we will be using. Our first task will be to upload the compiled result of blink.c. Blinking an LED is the embedded equivalent to printing 'Hello World!' in other languagues and is a good starting point for making sure that all components of your system are functioning properly. For this, I will use the text editor nano because it's included with most distrabutions. Feel free to use another editor. Also, if you didn't clone the repository into your home folder, you will need to cd into that folder.
+Now that we have the code, let's look at the code file we will be using. Our first task will be to upload the compiled result of blink.c. Blinking an LED is the embedded equivalent to printing 'Hello World!' in other languagues and is a good starting point for making sure that all components of your system are functioning properly. For this, I will use the text editor nano because it's included with most distributions. Feel free to use another editor. Also, if you didn't clone the repository into your home folder, you will need to cd into that folder.
 ```bash
 cd 
 cd elecanisms/blink
@@ -94,22 +94,21 @@ nano blink.c
 ```
 This should open up some C code in the terminal text editor, Nano. To close this, use the key sequence ctl+X,Y. Look at this code and make sure everything makes sense. 
 
-
 ##Bootloader
-Now that we can compile our code into something that won't seem wacky to our microcontroler, let's try putting it on the board! To do this, we will use a bootloader. This is a Python build system with both GUI functionality and a command line interface. To install Scons, type into a command prompt:
+Now that we can compile our code into something that won't seem wacky to our microcontroler, let's try putting it on the board! To do this, we will use a bootloader. This is a Python build system with both GUI functionality and a command line interface, and as such takes the form of a Python script in the bootloader folder you unzipped earlier.
 
 ##Loading Code to the Board
-Assuming you followed the previous instructions, you should be able to run the bootloader from elecanisms/bootloader/software.
+Assuming you followed the previous instructions, you should be able to run the bootloader from your /bin/bootloader/software folder, or wherever you unzipped it to.
  ```bash
  cd
- cd elecanisms/bootloader/software
+ cd bin/bootloader/software
  python bootloadergui.py
  ```
  should open a familiar window.
  
  ![Image of the GUI Bootloader on startup](https://github.com/hmurraydavis/elecanisms/blob/master/blink/GUI_Bootloader_opens.jpg)
  
- *Replacing "bootloadergui" with "bootloadercmd" in the above code opens a command-line version of the bootlaoder with the same functionality. This document will assume you are using the GUI.
+*Replacing "bootloadergui" with "bootloadercmd" in the above code opens a command-line version of the bootlaoder with the same functionality. This document will assume you are using the GUI.
  
 If you plugged the board in before opening the bootloader, your bootloader will display the message "Could not connect...". Reset the board by holding switch 1 (the one next to the red reset button) and pressing said red button, then click "Connect" in the bootloader window. If you did not plug in the board before launching the bootloader, do so now and click "Connect". You should see the screen below.
 
