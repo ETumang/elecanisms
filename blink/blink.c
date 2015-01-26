@@ -13,13 +13,20 @@ int16_t main(void) {
     timer_setPeriod(&timer2, 0.5);
     timer_start(&timer2);
 
+    int light = 0;
+
     while (1) {
         if (timer_flag(&timer2)) {
             timer_lower(&timer2);
-            led_toggle(&led1);
-        }
-        led_write(&led2, !sw_read(&sw2));
-        led_write(&led3, !sw_read(&sw3));
+
+            light = light % 3;
+            
+            led_write(&led1,!(light));
+            led_write(&led2,!(light-1));
+            led_write(&led3,!(light-2)); 
+
+            light++;              
     }
+}
 }
 

@@ -1,16 +1,16 @@
 
 env = Environment(PIC = '24FJ128GB206', 
-                  CC = 'pic30-gcc', 
+                  CC = 'xc16-gcc', 
                   PROGSUFFIX = '.cof', 
                   CFLAGS = '-g -omf=coff -x c -mcpu=$PIC', 
                   LINKFLAGS = '-omf=coff -mcpu=$PIC -Wl,--script="app_p24FJ128GB206.gld"', 
                   CPPPATH = '../lib')
-env.PrependENVPath('PATH', '/Applications/microchip/mplabc30/v3.30c/bin')
-bin2hex = Builder(action = 'pic30-bin2hex $SOURCE -omf=coff',
+env.PrependENVPath('PATH', '/opt/microchip/xc16/v1.24/bin')
+bin2hex = Builder(action = 'xc16-bin2hex $SOURCE -omf=coff',
                   suffix = 'hex', 
                   src_suffix = 'cof')
 env.Append(BUILDERS = {'Hex' : bin2hex})
-list = Builder(action = 'pic30-objdump -S -D $SOURCE > $TARGET', 
+list = Builder(action = 'xc16-objdump -omf=coff -S -D $SOURCE > $TARGET', 
                suffix = 'lst', 
                src_suffix = 'cof')
 env.Append(BUILDERS = {'List' : list})
