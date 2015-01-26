@@ -105,18 +105,20 @@ Assuming you followed the previous instructions, you should be able to run the b
  cd elecanisms/bootloader/software
  python bootloadergui.py
  ```
- should open this window //add screencap here
+ should open a familiar window.
+ 
+ ![Image of the GUI Bootloader on startup](https://github.com/hmurraydavis/elecanisms/blob/master/blink/GUI_Bootloader_opens.jpg)
  
  *Replacing "bootloadergui" with "bootloadercmd" in the above code opens a command-line version of the bootlaoder with the same functionality. This document will assume you are using the GUI.
  
- As you can see from the above screenshot, the bootloader has not detected the board...which means it can't upload code. Do not panic! Reset the board by holding switch 1 (the one next to the red reset button) and pressing said red button. You should now see this //screencap
- 
-Replacing "bootloadergui" with "bootloadercmd" in the above code opens a command-line version of the bootlaoder with the same functionality. This document will assume you are using the GUI.
-  
-If you plugged the board in before opening the bootloader, your bootloader will display the message "Could not connect...". Reset the board by holding switch 1 (the one next to the red reset button) and pressing said red button, then click "Connect" in the bootloader window. If you did not plug in the board before launching the bootlaoder, do so now and click "Connect". You should see this //screencap
+If you plugged the board in before opening the bootloader, your bootloader will display the message "Could not connect...". Reset the board by holding switch 1 (the one next to the red reset button) and pressing said red button, then click "Connect" in the bootloader window. If you did not plug in the board before launching the bootloader, do so now and click "Connect". You should see the screen below.
+
+![GUI bootloader on connection](https://github.com/hmurraydavis/elecanisms/blob/master/blink/Connected_to_Elecanisms_Board_GUI_Bootloader.jpg)
   
 However, the hex file to upload seems oddly uniform. That is because the hex file representing the blink code hasn't been loaded into the bootloader yet- the bootloader can be used for any compiled C file, and doesn't know which one to load automatically. To choose the file to load, click on "File" in the top left corner and choose the "Import Hex" option. A small window should pop up. Navigate to the "blink" folder and select blink.hex. Hit the "Open" button, closing the popup and loading blink.hex as the file to be uploaded to the board. 
 
-Finally, clck "Write" to actually upload the blink code. It should take a few seconds, and then display the confirmation message below \\screencap
+Finally, clck "Write" to actually upload the blink code. It should take a few seconds, and then display the confirmation message below.
+
+![Gui after code write](https://github.com/hmurraydavis/elecanisms/blob/master/blink/Write_Successful_GUI_Bootloader.jpg)
 
 In order to test that the correct code was uploaded, you can either hit the board's red Reset button again, or click "Disconnect/Run" in the bootloader. You should see the three small LEDs on the board flashing in sequence from blue to green to red and then back to blue.  If you do, congratulations! 
