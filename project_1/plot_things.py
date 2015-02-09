@@ -15,12 +15,16 @@ def main():
 	while num_points > len(plot):
 		read_values = ser.readline()
 		buffer = read_values
+		plot.append(abs(int(buffer))/.001)
 
-		plot.append(int(buffer))
-		print plot
+		#plot.append(int(buffer))
+		#print plot
 	ser.close()
 
 	plt.plot(plot)
+	plt.title("Motor Spin-Down")
+	plt.xlabel("Time (s/10)")
+	plt.ylabel("Degrees per Second")
 	plt.show()
 
 	
@@ -28,4 +32,6 @@ def main():
 
 if __name__=='__main__':
 	main()
+
+
 

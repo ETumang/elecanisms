@@ -9,8 +9,9 @@
 #define  FULL_DUTY_CYCLE 2^16
 #define  MAX_VOLTAGE 2^12
 
-#define  DATA_PERIOD .1
-#define  SEND_SCALAR  1
+#define  DATA_PERIOD .001
+#define  SEND_SCALAR  100
+#define DutyCycle 65534 
 
 int get_pos = 1;
 int send_data = 0;
@@ -74,6 +75,8 @@ void main(void){
 	lastRawPos = pin_read(&A[0])>>6;
 	lastLastRawPos = pin_read(&A[0])>>6;
 
+	oc_pwm(&oc1, &D[6], NULL, 500, DutyCycle);
+
 	while(1){
 		if(get_pos){
 			rawPos = pin_read(&A[0])>>6;
@@ -89,26 +92,25 @@ void main(void){
   lastRawPos = rawPos;
   
   // Keep track of flips over 180 degrees
-  if((lastRawOffset > 800) && (!flipped)) { // enter this anytime the last offset is greater than the flip threshold AND it has not just flipped
+  if((lastRawOffset > 700) && (!flipped)) { // enter this anytime the last offset is greater than the flip threshold AND it has not just flipped
     if(lastRawDiff > 0) {        // check to see which direction the drive wheel was turning
       flips--;              // cw rotation 
     } else {                     // if(rawDiff < 0)
       flips++;              // ccw rotation
     }
   // check to see if the data was good and the most current offset is above the threshold
-    updatedPos = rawPos + flips*rawOffset; // update the pos value to account for flips over 180deg using the most current offset 
+    updatedPos = rawPos + flips*800; // update the pos value to account for flips over 180deg using the most current offset 
     offset = rawOffset;
-    
     flipped = 1;        // set boolean so that the next time through the loop won't trigger a flip
   } else {                        // anytime no flip has occurred
-    updatedPos = rawPos + flips*rawOffset; // need to update pos based on what most recent offset is 
+    updatedPos = rawPos + flips*800; // need to update pos based on what most recent offset is 
     flipped = 0;
   }
 }
 		
 		if(send_data == SEND_SCALAR){
 			
-			printf("%li\n",(long int)(updatedPos));
+			printf("%lli\n",(long long int)((rawDiff)));
 			send_data = 0;
 			led_toggle(&led3);
 		}
