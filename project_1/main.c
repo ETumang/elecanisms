@@ -108,7 +108,7 @@ void main(void){
 		
 		if(send_data == SEND_SCALAR){
 			
-			printf("%li\n",(long int)(rawPos));
+			printf("%li\n",(long int)(updatedPos));
 			send_data = 0;
 			led_toggle(&led3);
 		}
