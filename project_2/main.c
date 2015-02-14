@@ -26,6 +26,34 @@
 int get_pos = 1;
 int send_data = 0;
 int flipped = 0;
+//Declare globals:
+char current_line[8]; // allocate some space for the string
+
+void read_line(char *line) {
+    // read characters from serial into line until a newline character
+    char c;
+    int index;
+    for (index = 0; index < 5; index++) {
+        // wait until there is a character
+        while (Serial.available() == 0);
+        // read a character
+        c = Serial.read();
+        if (c == '\n') {
+            break;
+        } else {
+            line[index] = c;
+        }
+    }
+    // terminate the string
+    line[index] = '\0';
+}
+
+int get_amount(char *line) {
+    // return the number in a string such as "r1200" as an int
+    int amount;
+    amount = (int) strtol(line+1, NULL, 10);
+    return amount;
+}
 
 int sum_array(int a[], int num_elements){
     /*Written by:
@@ -312,11 +340,7 @@ int FSM(){
             //Wall mode!
             writeLEDs(0,0,1);
             wall();
-            break;
-            
-        
+            break;   
         }
-    
-
 }
 
