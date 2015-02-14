@@ -8,13 +8,13 @@
 
 #define TIME_READING_WINDOW 30
 #define SET_POINT 59060
-#define KP 30
+#define KP 40
 //KI will be what the integral control is devided by, 
 // for the KI you want, compute KI_desired^(-1)
-#define KI 4
+#define KI 10
 //KD will be what deritive control is devided by,
 //cor the KD you want, compute KD_desired^(-1)
-#define KD 1
+#define KD 4
 
 #define  FULL_DUTY_CYCLE 2^16
 #define  MAX_VOLTAGE 2^12
@@ -113,8 +113,8 @@ int computeMotorControl(){
     
     //Compute motor control signal with control:
     int motor_command_portional = KP*(SET_POINT - current_position);
-    int motor_command_integral = sum_error_readings/KI/TIME_READING_WINDOW;
-    int motor_command_derivative = sum_difference_readings/KD/TIME_READING_WINDOW;
+    int motor_command_integral = KI*sum_error_readings/TIME_READING_WINDOW;
+    int motor_command_derivative = KD*sum_difference_readings/TIME_READING_WINDOW;
     int totalMotorControl=motor_command_portional+motor_command_integral+motor_command_derivative;
     
     //Print computed values for debugging purposes. Comment out on PIC. 
@@ -237,5 +237,86 @@ void main(void){
 		}
 		/*Don't forget to check your serial port and baud rate*/
 	}
+}
+
+void writeLEDs(int led1State, int led2State, int led3State){
+    /* Write the three LEDs according to the values passed in. If value for LED 
+    is 0, it will be off. Otherwise, it will be on. Will also turn off leds which are on. */
+    led_write(&led1, led1State);
+    led_write(&led2,led2State);
+    led_write(&led3, led2State);
+}
+
+void wallMotion(int position){
+    /*Creates the texture motion for the wall state, given the position of the 
+    handle controler. Does this by writing the motor command to high if the 
+    handle's position is within two angle readings. */
+    unsigned int writeVal = 300;
+    int writeState = 0;
+    if ((position<60) && (position>35)){
+        pin_write(&D[6], writeVal);
+        writeState=1;
+    }
+    if ((position<15) && (position>0) ){
+        pin_write(&D[6], writeVal);
+        writeState=1;
+    }
+    if (writeState==0){
+    /*If it's not in the range of the walls, write the motor command to low. */
+        pin_write(&D[6], 0);    
+    }
+}
+
+int spring(){}
+int damper(){}
+
+int texture(){
+    int text[11]={1,1,0,0,0,0,1,0,0,1};
+    int i=0;
+    for (i=0; i<=(sizeof(text)/sizeof(text[0])); i++){
+        if (text[i]==1){
+            pin_write(&D[6],(unsigned int) 30);
+        }
+        if (text[i]==0){
+            pin_write(&D[6],(unsigned int) 2);
+        }
+    }  
+}
+int wall(){}
+
+int FSM(){
+    //Controler receives the state over USB
+    int state = 1;
+    /*0 is spring
+    1 is damper
+    2 is texture
+    3 is wall*/
+    
+    switch (state){
+        case 0:
+            //The spring mode!  
+            writeLEDs(1,0,0);
+            spring();
+            break;
+        case 1:
+            //The damper mode!!!
+            writeLEDs(0,1,0);
+            damper();
+            break;
+        case 2:
+            //Texture mode!
+            writeLEDs(1,1,0);
+            texture();
+            break;
+        case 3: 
+            //Wall mode!
+            writeLEDs(0,0,1);
+            wall();
+            break;
+            
+        
+        }
+    
+
 }
 
