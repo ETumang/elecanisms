@@ -27,7 +27,7 @@ int get_pos = 1;
 int send_data = 0;
 int flipped = 0;
 //Declare globals:
-char current_line[8]; // allocate some space for the string
+char current_line[13]; // allocate some space for the string
 
 void read_line(char *line) {
     // read characters from serial into line until a newline character
