@@ -133,32 +133,33 @@ void setup(void){
 	timer_every(&timer1, DATA_PERIOD, data_timing);
 
 	led_on(&led1);
-
-	rawPos = pin_read(&A[0])>>6;
-	lastRawPos = pin_read(&A[0])>>6;
-	lastLastRawPos = pin_read(&A[0])>>6;
     
-	oc_pwm(&oc1, &D[6], NULL, 500, DutyCycle);
+	oc_pwm(&oc1, &D[6], NULL, 500, 0);//go right
+    oc_pwm(&oc2, &D[5], NULL, 500, 0);//go left
 }
 
 void writeMotor(int command){
     if (command>=20){
         //Write to motor direction 1 (right)
         if (motorDirection==1){
-            //The motor is already set in the correct direction. Just write the control value.
+            pin_write(&D[6],command);
         }
         if (motorDirection==0){
-            //Flip motor direction then write the control value
+            pin_write(&D[6],0);
+            pin_write(&D[5], command);
+            motorDirection=1;
         }
     }
     
     if (command<20){
         //Write to motor direction left (0)
         if (motorDirection==1){
-            //The motor is already set in the correct direction. Just write the control value.
+            pin_write(&D[6],command);
         }
         if (motorDirection==0){
-            //Flip motor direction then write the control value        
+            pin_write(&D[5],0);
+            pin_write(&D[6], command);
+            motorDirection=1;   
         }
     }
 }
