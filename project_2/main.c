@@ -141,25 +141,27 @@ void setup(void){
 	oc_pwm(&oc1, &D[6], NULL, 500, DutyCycle);
 }
 
-/*void writeMotor(int command){
+void writeMotor(int command){
     if (command>=20){
-        //Write to motor direction 1 (right?)
+        //Write to motor direction 1 (right)
         if (motorDirection==1){
-            pin_write(&D[6], command);
+            //The motor is already set in the correct direction. Just write the control value.
         }
         if (motorDirection==0){
-            oc_pwm(&D[6], &oc1, NULL, 500, DutyCycle);
+            //Flip motor direction then write the control value
         }
     }
+    
     if (command<20){
+        //Write to motor direction left (0)
         if (motorDirection==1){
-        
+            //The motor is already set in the correct direction. Just write the control value.
         }
         if (motorDirection==0){
-        
+            //Flip motor direction then write the control value        
         }
     }
-}*/
+}
 
 
 void writeLEDs(int led1State, int led2State, int led3State){
@@ -244,7 +246,7 @@ int main(){
             readings[i-1]=readings[i];
         }
         readings[TIME_READING_WINDOW]=position;
-        int state = 1; //TODO: Hardcode state for testing!
+        int state = 3; //TODO: Hardcode state for testing!
         switch (state){
             case 0:
                 //The spring mode!  
