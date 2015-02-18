@@ -5,6 +5,7 @@
 #include "timer.h"
 #include "uart.h"
 #include <stdio.h>
+#include "positionCount.h"
 
 #define TIME_READING_WINDOW 30
 #define SET_POINT 59060
@@ -25,28 +26,29 @@
 
 int get_pos = 1;
 int send_data = 0;
-int flipped = 0;
+
+int position;
 //Declare globals:
 char current_line[13]; // allocate some space for the string
 
-void read_line(char *line) {
-    // read characters from serial into line until a newline character
-    char c;
-    int index;
-    for (index = 0; index < 5; index++) {
-        // wait until there is a character
-        while (Serial.available() == 0);
-        // read a character
-        c = Serial.read();
-        if (c == '\n') {
-            break;
-        } else {
-            line[index] = c;
-        }
-    }
-    // terminate the string
-    line[index] = '\0';
-}
+// void read_line(char *line) {
+//     // read characters from serial into line until a newline character
+//     char c;
+//     int index;
+//     for (index = 0; index < 5; index++) {
+//         // wait until there is a character
+//         while (Serial.available() == 0);
+//         // read a character
+//         c = Serial.read();
+//         if (c == '\n') {
+//             break;
+//         } else {
+//             line[index] = c;
+//         }
+//     }
+//     // terminate the string
+//     line[index] = '\0';
+// }
 
 int get_amount(char *line) {
     // return the number in a string such as "r1200" as an int
@@ -217,34 +219,7 @@ void main(void){
 
 	while(1){
 		if(get_pos){
-			        rawPos = pin_read(&A[0])>>6;
-		
-          // Calculate differences between subsequent MR sensor readings
-          rawDiff = rawPos - lastRawPos;          //difference btwn current raw position and last raw position
-          lastRawDiff = rawPos - lastLastRawPos;  //difference btwn current raw position and last last raw position
-          rawOffset = abs(rawDiff);
-          lastRawOffset = abs(lastRawDiff);
-          
-          // Update position record-keeping vairables
-          lastLastRawPos = lastRawPos;
-          lastRawPos = rawPos;
-          
-          // Keep track of flips over 180 degrees
-          if((lastRawOffset > 700) && (!flipped)) { // enter this anytime the last offset is greater than the flip threshold AND it has not just flipped
-            if(lastRawDiff > 0) {        // check to see which direction the drive wheel was turning
-              flips--;              // cw rotation 
-            } else {                     // if(rawDiff < 0)
-              flips++;              // ccw rotation
-            }
-          // check to see if the data was good and the most current offset is above the threshold
-            updatedPos = rawPos + flips*800; // update the pos value to account for flips over 180deg using the most current offset 
-            offset = rawOffset;
-            flipped = 1;        // set boolean so that the next time through the loop won't trigger a flip
-          } else {                        // anytime no flip has occurred
-            updatedPos = rawPos + flips*800; // need to update pos based on what most recent offset is 
-            flipped = 0;
-              }
-            
+            position = update_pos(pin_read(&A[0])<<6);
             //Compute the motor control information:
             int motorCommand = computeMotorControl();
             motorCommand <<1;

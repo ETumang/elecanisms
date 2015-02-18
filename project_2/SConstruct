@@ -17,6 +17,7 @@ env.Append(BUILDERS = {'List' : list})
 
 env.Program('main', ['main.c',
                       '../lib/timer.c',
+			'positionCount.c',
                       '../lib/ui.c',
                       '../lib/uart.c',
 			'../lib/pin.c',
