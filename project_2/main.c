@@ -26,6 +26,7 @@
 
 int get_pos = 1;
 int send_data = 0;
+int motorDirection=1;
 
 int get_amount(char *line) {
     // return the number in a string such as "r1200" as an int
@@ -140,10 +141,25 @@ void setup(void){
 	oc_pwm(&oc1, &D[6], NULL, 500, DutyCycle);
 }
 
-/*void writeMotor(int control){*/
-/*    if command>=*/
-/*    pin_write(&D[6], command);*/
-/*}*/
+/*void writeMotor(int command){
+    if (command>=20){
+        //Write to motor direction 1 (right?)
+        if (motorDirection==1){
+            pin_write(&D[6], command);
+        }
+        if (motorDirection==0){
+            oc_pwm(&D[6], &oc1, NULL, 500, DutyCycle);
+        }
+    }
+    if (command<20){
+        if (motorDirection==1){
+        
+        }
+        if (motorDirection==0){
+        
+        }
+    }
+}*/
 
 
 void writeLEDs(int led1State, int led2State, int led3State){
@@ -151,7 +167,7 @@ void writeLEDs(int led1State, int led2State, int led3State){
     is 0, it will be off. Otherwise, it will be on. Will also turn off leds which are on. */
     led_write(&led1, led1State);
     led_write(&led2,led2State);
-    led_write(&led3, led2State);
+    led_write(&led3, led3State);
 }
 
 void wallMotion(int position){
@@ -210,7 +226,7 @@ int main(){
     1 is damper
     2 is texture
     3 is wall*/
-    int KDd = 20; //constant fof the damper derivative control!
+    int KDd = 40; //constant fof the damper derivative control!
     int KSs = 10; //Constant for spring setting
     
     /*Make an array to hole our position readings and initialize its elements to 0. */
@@ -233,7 +249,8 @@ int main(){
             case 0:
                 //The spring mode!  
                 writeLEDs(1,0,0);
-                spring(KSs, readings);
+                //spring(KSs, readings);
+                pin_write(&D[6], 300);
                 break;
             case 1:
                 //The damper mode!!!
