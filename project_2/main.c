@@ -27,8 +27,6 @@
 int get_pos = 1;
 int send_data = 0;
 
-int position;
-
 int get_amount(char *line) {
     // return the number in a string such as "r1200" as an int
     int amount;
@@ -142,6 +140,12 @@ void setup(void){
 	oc_pwm(&oc1, &D[6], NULL, 500, DutyCycle);
 }
 
+/*void writeMotor(int control){*/
+/*    if command>=*/
+/*    pin_write(&D[6], command);*/
+/*}*/
+
+
 void writeLEDs(int led1State, int led2State, int led3State){
     /* Write the three LEDs according to the values passed in. If value for LED 
     is 0, it will be off. Otherwise, it will be on. Will also turn off leds which are on. */
@@ -170,18 +174,19 @@ void wallMotion(int position){
     }
 }
 
-int spring(k){
-    int readings[30]; //TODO: Make this be a pointer to the readings 
+int spring(int k, int readings[]){
     int position = sum_array(readings, TIME_READING_WINDOW);
     int command = k*abs(position);
     pin_write(&D[6], command);
 }
-int damper(k){
-    int readings[30]; //TODO: Make this be a pointer to the readings 
+
+
+int damper(int k, int readings[]){
     int derivative = sum_difference(readings,30)/TIME_READING_WINDOW;
-    int command = k*abs(derivative);
+    int command = k*derivative;
     pin_write(&D[6], command);
 }
+
 
 int texture(){
     int text[11]={1,1,0,0,0,0,1,0,0,1};
@@ -201,37 +206,51 @@ int wall(){}
 int main(){
     setup();
     //Controler receives the state over USB
-    int state = 1;
     /*0 is spring
     1 is damper
     2 is texture
     3 is wall*/
-    int KDd = 30; //constant fof the damper derivative control!
-    int KSs = 30; //Constant for spring setting
+    int KDd = 20; //constant fof the damper derivative control!
+    int KSs = 10; //Constant for spring setting
     
-     position = update_pos(pin_read(&A[0])<<6);
+    /*Make an array to hole our position readings and initialize its elements to 0. */
+    int readings[TIME_READING_WINDOW];
+    int i = 0; 
+    for(i; i<TIME_READING_WINDOW; i++){
+        readings[i]=0;
+    }
     
-    switch (state){
-        case 0:
-            //The spring mode!  
-            writeLEDs(1,0,0);
-            spring(KSs);
-            break;
-        case 1:
-            //The damper mode!!!
-            writeLEDs(0,1,0);
-            damper(KDd);
-            break;
-        case 2:
-            //Texture mode!
-            writeLEDs(1,1,0);
-            texture();
-            break;
-        case 3: 
-            //Wall mode!
-            writeLEDs(0,0,1);
-            wall();
-            break;   
+    while(1){
+        int position = (update_pos(pin_read(&A[0])<<6)-59215)/-17;
+        
+        //Shift every element in the array one space to the left
+        for(i=1; i<TIME_READING_WINDOW;i++){
+            readings[i-1]=readings[i];
         }
+        readings[TIME_READING_WINDOW]=position;
+        int state = 1; //TODO: Hardcode state for testing!
+        switch (state){
+            case 0:
+                //The spring mode!  
+                writeLEDs(1,0,0);
+                spring(KSs, readings);
+                break;
+            case 1:
+                //The damper mode!!!
+                writeLEDs(0,1,0);
+                damper(KDd, readings);
+                break;
+            case 2:
+                //Texture mode!
+                writeLEDs(1,1,0);
+                texture();
+                break;
+            case 3: 
+                //Wall mode!
+                writeLEDs(0,0,1);
+                wall();
+                break;   
+        }
+    }
 }
 
