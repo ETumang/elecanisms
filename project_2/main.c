@@ -29,7 +29,7 @@ int flipped = 0;
 //Declare globals:
 char current_line[13]; // allocate some space for the string
 
-void read_line(char *line) {
+/*void read_line(char *line) {
     // read characters from serial into line until a newline character
     char c;
     int index;
@@ -46,7 +46,7 @@ void read_line(char *line) {
     }
     // terminate the string
     line[index] = '\0';
-}
+}*/
 
 int get_amount(char *line) {
     // return the number in a string such as "r1200" as an int
@@ -132,9 +132,9 @@ int computeMotorControl(){
         printf("Array value at %2d is: %2d \n", i, readings[i]);
     }
     
-    int sum_sensor_readings = sum_array(readings, 30);
-    int sum_error_readings = sum_error(readings, 30);
-    int sum_difference_readings = sum_difference(readings,30);
+    int sum_sensor_readings = sum_array(readings, TIME_READING_WINDOW);
+    int sum_error_readings = sum_error(readings, TIME_READING_WINDOW);
+    int sum_difference_readings = sum_difference(readings,TIME_READING_WINDOW);
     
     //Average sensor readings in time window to get approximate current position:
     int current_position = sum_sensor_readings/TIME_READING_WINDOW; 
@@ -295,8 +295,18 @@ void wallMotion(int position){
     }
 }
 
-int spring(){}
-int damper(){}
+int spring(k){
+    int readings[30]; //TODO: Make this be a pointer to the readings 
+    int position = sum_array(readings, TIME_READING_WINDOW);
+    int command = k*abs(position);
+    pin_write(&D[6], command);
+}
+int damper(k){
+    int readings[30]; //TODO: Make this be a pointer to the readings 
+    int derivative = sum_difference(readings,30)/TIME_READING_WINDOW;
+    int command = k*abs(derivative);
+    pin_write(&D[6], command);
+}
 
 int texture(){
     int text[11]={1,1,0,0,0,0,1,0,0,1};
@@ -310,6 +320,7 @@ int texture(){
         }
     }  
 }
+
 int wall(){}
 
 int FSM(){
@@ -319,17 +330,19 @@ int FSM(){
     1 is damper
     2 is texture
     3 is wall*/
+    int KDd = 30; //constant fof the damper derivative control!
+    int KSs = 30; //Constant for spring setting
     
     switch (state){
         case 0:
             //The spring mode!  
             writeLEDs(1,0,0);
-            spring();
+            spring(KSs);
             break;
         case 1:
             //The damper mode!!!
             writeLEDs(0,1,0);
-            damper();
+            damper(KDd);
             break;
         case 2:
             //Texture mode!
