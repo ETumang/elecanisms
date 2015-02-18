@@ -28,28 +28,6 @@ int get_pos = 1;
 int send_data = 0;
 
 int position;
-//Declare globals:
-char current_line[13]; // allocate some space for the string
-
-/*void read_line(char *line) {
-    // read characters from serial into line until a newline character
-    char c;
-    int index;
-    for (index = 0; index < 5; index++) {
-        // wait until there is a character
-        while (Serial.available() == 0);
-        // read a character
-        c = Serial.read();
-        if (c == '\n') {
-            break;
-        } else {
-            line[index] = c;
-        }
-    }
-    // terminate the string
-    line[index] = '\0';
-}*/
-
 
 int get_amount(char *line) {
     // return the number in a string such as "r1200" as an int
@@ -109,7 +87,7 @@ void data_timing(_TIMER *timer){
 	get_pos = 1;
 }
 
-void main(void){
+void setup(void){
 
 	init_pin();
 	init_oc();
@@ -162,20 +140,6 @@ void main(void){
 	lastLastRawPos = pin_read(&A[0])>>6;
     
 	oc_pwm(&oc1, &D[6], NULL, 500, DutyCycle);
-
-	while(1){
-		if(get_pos){
-            position = update_pos(pin_read(&A[0])<<6);
-        }
-		
-		if(send_data == SEND_SCALAR){
-			
-			printf("%lli\n",(long long int)((rawDiff)));
-			send_data = 0;
-			led_toggle(&led3);
-		}
-		/*Don't forget to check your serial port and baud rate*/
-	}
 }
 
 void writeLEDs(int led1State, int led2State, int led3State){
@@ -234,7 +198,8 @@ int texture(){
 
 int wall(){}
 
-int FSM(){
+int main(){
+    setup();
     //Controler receives the state over USB
     int state = 1;
     /*0 is spring
@@ -243,6 +208,8 @@ int FSM(){
     3 is wall*/
     int KDd = 30; //constant fof the damper derivative control!
     int KSs = 30; //Constant for spring setting
+    
+     position = update_pos(pin_read(&A[0])<<6);
     
     switch (state){
         case 0:
