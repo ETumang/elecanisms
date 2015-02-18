@@ -17,6 +17,8 @@
 //cor the KD you want, compute KD_desired^(-1)
 #define KD 4
 
+#define K 0
+
 #define  FULL_DUTY_CYCLE 2^16
 #define  MAX_VOLTAGE 2^12
 
@@ -139,26 +141,26 @@ void setup(void){
 }
 
 void writeMotor(int command){
-    if (command>=20){
+    if (command>=200){
         //Write to motor direction 1 (right)
         if (motorDirection==1){
-            pin_write(&D[6],command);
+            pin_write(&D[6],DutyCycle);
         }
         if (motorDirection==0){
             pin_write(&D[6],0);
-            pin_write(&D[5], command);
+            pin_write(&D[5], DutyCycle);
             motorDirection=1;
         }
     }
     
-    if (command<20){
+    if (command<200){
         //Write to motor direction left (0)
         if (motorDirection==1){
-            pin_write(&D[6],command);
+            pin_write(&D[6],command+K);
         }
         if (motorDirection==0){
             pin_write(&D[5],0);
-            pin_write(&D[6], command);
+            pin_write(&D[6], command + K);
             motorDirection=1;   
         }
     }
@@ -248,12 +250,12 @@ int main(){
         }
         readings[TIME_READING_WINDOW]=position;
         int state = 3; //TODO: Hardcode state for testing!
-        switch (state){
+        switch (0){
             case 0:
                 //The spring mode!  
                 writeLEDs(1,0,0);
                 //spring(KSs, readings);
-                pin_write(&D[6], 300);
+                writeMotor(20);
                 break;
             case 1:
                 //The damper mode!!!
