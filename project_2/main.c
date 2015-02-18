@@ -104,61 +104,6 @@ int sum_difference(int a[], int num_elements){
     return sum_difference;
 }
 
-int computeMotorControl(){
-    //allocate array for sensor readings:
-    int readings[TIME_READING_WINDOW]; 
-    int sensorReading = 5; //pseudo sensor reading, TODO: REPLACE WITH REAL VALUE
-    
-    //Oust the deamons: (Initialize array)
-    int i=0;
-    for(i=0; i<TIME_READING_WINDOW; ++i){
-        readings[i]=0;
-    }
-    
-    //Loop through the array and discard the oldest position reading:
-    i=1;
-    for(i=1; i<TIME_READING_WINDOW; ++i){
-        if(readings[i]>0.1000){
-            readings[i-1] = readings[i]; 
-        }
-        else{
-            readings[i-1] = sensorReading;
-        }        
-    }
-    
-    //Write the current sensor reading to end of array:
-    readings[TIME_READING_WINDOW-1] = sensorReading;
-    
-    /* Print array values, Debug only. */
-    i=0;
-    for(i=0; i<=TIME_READING_WINDOW-1; i++){
-        printf("Array value at %2d is: %2d \n", i, readings[i]);
-    }
-    
-    int sum_sensor_readings = sum_array(readings, TIME_READING_WINDOW);
-    int sum_error_readings = sum_error(readings, TIME_READING_WINDOW);
-    int sum_difference_readings = sum_difference(readings,TIME_READING_WINDOW);
-    
-    //Average sensor readings in time window to get approximate current position:
-    int current_position = sum_sensor_readings/TIME_READING_WINDOW; 
-    
-    //Compute motor control signal with control:
-    int motor_command_portional = KP*(SET_POINT - current_position);
-    int motor_command_integral = KI*sum_error_readings/TIME_READING_WINDOW;
-    int motor_command_derivative = KD*sum_difference_readings/TIME_READING_WINDOW;
-    int totalMotorControl=motor_command_portional+motor_command_integral+motor_command_derivative;
-    
-    //Print computed values for debugging purposes. Comment out on PIC. 
-    /*printf("The sum of the sensor readings is: %3d \n", sum_sensor_readings);
-    printf("Current position is: %3d\n",current_position);
-    printf("Command for porportional motor control is: %3d\n",motor_command_portional);
-    printf("Command for integral motor control is: %3d\n",motor_command_integral);
-    printf("Command for deritive motor control is: %3d\n",motor_command_derivative);*/
-
-    return totalMotorControl;
-}
-
-
 void data_timing(_TIMER *timer){
 	send_data ++;
 	get_pos = 1;
@@ -221,16 +166,6 @@ void main(void){
 	while(1){
 		if(get_pos){
             position = update_pos(pin_read(&A[0])<<6);
-            //Compute the motor control information:
-            int motorCommand = computeMotorControl();
-            motorCommand <<1;
-            pin_write(&D[6],(unsigned int) motorCommand);
-            if (motorCommand>0){
-                led_write(&led2, 1);
-            }
-            else{
-                led_write(&led2,0);
-            }
         }
 		
 		if(send_data == SEND_SCALAR){
