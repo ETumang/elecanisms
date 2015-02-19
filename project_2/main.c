@@ -141,7 +141,8 @@ void setup(void){
 }
 
 void writeMotor(int command){
-    if (command>=200){
+    int motorDirectionThreshold = 200;
+    if (command>=motorDirectionThreshold){
         //Write to motor direction 1 (right)
         if (motorDirection==1){
             pin_write(&D[6],DutyCycle);
@@ -153,7 +154,7 @@ void writeMotor(int command){
         }
     }
     
-    if (command<200){
+    if (command<motorDirectionThreshold){
         //Write to motor direction left (0)
         if (motorDirection==1){
             pin_write(&D[6],command+K);
@@ -181,7 +182,7 @@ void wallMotion(int position){
     handle's position is within two angle readings. */
     unsigned int writeVal = 300;
     int writeState = 0;
-    if ((position<60) && (position>35)){
+    if ((position<60) && (position<400)){
         pin_write(&D[6], writeVal);
         writeState=1;
     }
@@ -222,7 +223,9 @@ int texture(){
     }  
 }
 
-int wall(){}
+int wall(){
+    
+}
 
 int main(){
     setup();
