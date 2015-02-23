@@ -29,6 +29,8 @@
 int get_pos = 1;
 int send_data = 0;
 int motorDirection=1;
+//Motor commands above this value make it go right, commands below this value go left:
+int motorDirectionThreshold = 200; 
 
 int get_amount(char *line) {
     // return the number in a string such as "r1200" as an int
@@ -141,7 +143,6 @@ void setup(void){
 }
 
 void writeMotor(int command){
-    int motorDirectionThreshold = 200;
     if (command>=motorDirectionThreshold){
         //Write to motor direction 1 (right)
         if (motorDirection==1){
@@ -204,9 +205,18 @@ int spring(int k, int readings[]){
 
 
 int damper(int k, int readings[]){
-    int derivative = sum_difference(readings,30)/TIME_READING_WINDOW;
-    int command = k*derivative;
-    pin_write(&D[6], command);
+    int derivative = sum_difference(readings,30);
+    int command = abs(k*derivative/TIME_READING_WINDOW);
+    if(derivative>0){
+        //Actuate to the right
+        writeMotor(command+motorDirectionThreshold);
+    }
+    if(derivative<0){
+        //actuate motor left:
+        writeMotor(motorDirectionThreshold-command);
+    }
+    printf("Moror derivative position is: %i ,  command value is: %i \n", derivative, command);
+/*    delay(10);*/
 }
 
 
@@ -228,13 +238,14 @@ int wall(){
 }
 
 int main(){
+    printf("Hi, Halie. You rock my socks!\n");
     setup();
     //Controler receives the state over USB
     /*0 is spring
     1 is damper
     2 is texture
     3 is wall*/
-    int KDd = 40; //constant fof the damper derivative control!
+    int KDd = 300; //constant fof the damper derivative control!
     int KSs = 10; //Constant for spring setting
     
     /*Make an array to hole our position readings and initialize its elements to 0. */
@@ -243,17 +254,18 @@ int main(){
     for(i; i<TIME_READING_WINDOW; i++){
         readings[i]=0;
     }
+    writeLEDs(0,0,0);
     
     while(1){
-        int position = (update_pos(pin_read(&A[0])<<6)-59215)/-17;
-        
+        int position = (update_pos(pin_read(&A[0]))-59215)/-17;
+        printf("Posion reading new is: ,%d\n",position);
         //Shift every element in the array one space to the left
         for(i=1; i<TIME_READING_WINDOW;i++){
             readings[i-1]=readings[i];
         }
         readings[TIME_READING_WINDOW]=position;
-        int state = 3; //TODO: Hardcode state for testing!
-        switch (0){
+        int state = 1; //TODO: Hardcode state for testing!
+        switch (state){
             case 0:
                 //The spring mode!  
                 writeLEDs(1,0,0);
@@ -264,6 +276,7 @@ int main(){
                 //The damper mode!!!
                 writeLEDs(0,1,0);
                 damper(KDd, readings);
+                //writeMotor(300);
                 break;
             case 2:
                 //Texture mode!
