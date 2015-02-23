@@ -103,7 +103,7 @@ void data_timing(_TIMER *timer){
 	get_pos = 1;
 }
 
-void setup(void){
+int setup(void){
     
     //Initialize timer funzies!!!
     //DelayTimer1Init();
@@ -156,6 +156,13 @@ void setup(void){
     
 	oc_pwm(&oc1, &D[6], NULL, 500, 0);//go right
     oc_pwm(&oc2, &D[5], NULL, 500, 0);//go left
+    
+    int j=0; int p0=0; int numP0Read = 6;
+    for(j=0; i<=numP0Read; i++){
+        p0=p0 + (update_pos(pin_read(&A[0]))-59215)/-17;
+    }
+    p0 = p0/numP0Read;
+    return p0;
 }
 
 void delay(int delayTime){
@@ -234,9 +241,10 @@ void wallMotion(int position){
     }
 }
 
-int spring(int k, int readings[]){
+int spring(int k, int p0, int readings[]){
     int position = sum_array(readings, TIME_READING_WINDOW);
-    int command = k*abs(position);
+    int command = k*abs(position/TIME_READING_WINDOW);
+    int derivative = sum_difference(readings,TIME_READING_WINDOW);
     pin_write(&D[6], command);
 }
 
@@ -279,7 +287,7 @@ int wall(){
 
 int main(){
     printf("Hi, Halie. You rock my socks! Emily, you're a super lazer kitty!'\n");
-    setup();
+    int p0 = setup();
     //Controler receives the state over USB
     /*0 is spring
     1 is damper
