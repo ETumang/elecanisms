@@ -232,7 +232,7 @@ void writeLEDs(int led1State, int led2State, int led3State){
 
 int spring(int k, int p0, int readings[]){
     int direction= 3; 
-    int position = sum_array(readings, TIME_READING_WINDOW);
+    int position = sum_array(readings, TIME_READING_WINDOW); //TODO: divide by TIme Window before subtraction?
     int distanceOff = position-p0;
     int command = distanceOff/TIME_READING_WINDOW/k;
     //int derivative = sum_difference(readings,TIME_READING_WINDOW);
@@ -279,24 +279,25 @@ int texture(int Kt){
     }
 }
 
-int wall(int p0){
+int wall(int p0, int readings[], int t0, int t1, int t2, int t3){
     /*Creates the texture motion for the wall state, given the position of the 
     handle controler. Does this by writing the motor command to high if the 
     handle's position is within two angle readings. */
-    unsigned int writeVal = 300;
+    unsigned int writeVal = 200;
+    int position = sum_array(readings, TIME_READING_WINDOW)/TIME_READING_WINDOW;
     int writeState = 0;
-    if ((position<60) && (position<400)){
-        pin_write(&D[6], writeVal);
-        writeState=1;
+    int direction = 3;
+    
+    if ((position>t0) && (position <t1)){
+        //First wall, actuate right:
+        direction = 1;
     }
-    if ((position<15) && (position>0) ){
-        pin_write(&D[6], writeVal);
-        writeState=1;
+    if ((position>t2) && (position<t3)){
+        //Second wall, actuate left
+        direction = 0;
     }
-    if (writeState==0){
-    /*If it's not in the range of the walls, write the motor command to low. */
-        pin_write(&D[6], 0);    
-    }  
+    writeMotor(writeVal,direction);
+    printf("Positon is: %i, motor direction is: %i\n", position, direction);
 }
 
 void VendorRequests(void) {
@@ -395,7 +396,7 @@ int main(){
         
         //printf("\n");
 
-        int state = 0; //TODO: Hardcode state for testing!
+        int state = 3; //TODO: Hardcode state for testing!
 
         switch (state){
            case 0:
@@ -416,7 +417,7 @@ int main(){
             case 3: 
                 //Wall mode!
                 writeLEDs(0,0,1);
-                wall(p0);
+                wall(p0, readings, -300, 200, 500, 700);
                 break;   
         }
     }
