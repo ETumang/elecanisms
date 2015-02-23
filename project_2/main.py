@@ -19,16 +19,22 @@ def onButton(button, number):
 	if number == 0:
 		dial.set_adjustment(spring_val)
 		sbox.hide()
+		texture_in.hide()
 		main_buffer.set_text("Spring Constant")
 	elif number == 1:
 		dial.set_adjustment(damper_val)
 		sbox.hide()
+		texture_in.hide()
 		main_buffer.set_text("Damping Constant")
 	elif number == 2:
-		print("texture")
+		sbox.hide()
+		dial.hide()
+		main_buffer.set_text("Texture Pattern")
+		texture_in.show()
 	elif number == 3:
 		main_buffer.set_text("Wall Position")
 		dial.set_adjustment(wall_loc)
+		texture_in.hide()
 		sec_buffer.set_text("Wall Hardness")
 		sbox.show()
 
@@ -55,8 +61,8 @@ hbox = Gtk.Box(spacing=6)
 grid.add(hbox)
 sbox = Gtk.Grid()
 
-spring_val= Gtk.Adjustment(100, 0, 128,1)
-damper_val = Gtk.Adjustment(100, 0, 128,1)
+spring_val= Gtk.Adjustment(10, 0, 20,1)
+damper_val = Gtk.Adjustment(1, 0, 2,.01)
 wall_loc = Gtk.Adjustment(0, 0,10,1)
 wallhardness = Gtk.Adjustment(0,0,10,1)
 
@@ -89,10 +95,14 @@ grid.attach(dial, 0,2,1,1)
 grid.attach(sbox,0,3,3,2)
 sbox.hide()
 
+texture_in = Gtk.Entry()
+grid.attach(texture_in, 0, 2,1,1)
+texture_in.hide()
+
+
 data_button = Gtk.Button(label = "Collect Data")
 data_button.connect("clicked", dataController)
 grid.attach(data_button,0,5,1,1)
-
 
 
 spring_button = Gtk.RadioButton.new_with_label_from_widget(None, "Spring Mode")
@@ -118,8 +128,9 @@ win.show_all()
 
 while True:
     if (getData):
-    	pos.append(usb.getVals()[0])
-    	print(usb.getVals()[0])
+    	pos.append(usb.getVals())
+    	print(usb.getVals())
+    	
 
     while Gtk.events_pending():
         Gtk.main_iteration()

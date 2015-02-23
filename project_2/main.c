@@ -34,6 +34,10 @@ int state = 3;
 int val1 = 0;
 int val2 = 0;
 int position = 0;
+int p0;
+
+int derivative;
+int command;
 
     int KDd = 1; //constant fof the damper derivative control!
     int KSs = 10; //Constant for spring setting
@@ -100,7 +104,7 @@ void data_timing(_TIMER *timer){
 	get_pos = 1;
 }
 
-void setup(void){
+int setup(void){
 
 	init_pin();
 	init_oc();
@@ -152,6 +156,14 @@ void setup(void){
     
 	oc_pwm(&oc1, &D[6], NULL, 500, 0);//go right
     oc_pwm(&oc2, &D[5], NULL, 500, 0);//go left
+
+       int j=0; 
+    int p0=0;
+    for(j=0; i<=TIME_READING_WINDOW; i++){
+        p0=p0 + (update_pos(pin_read(&A[0]))-59215)/-17;
+     }
+   p0 = p0/TIME_READING_WINDOW;
+   return p0;
     }
 
 void writeMotor(int writeAmount, int motorDirectionDes){
@@ -198,17 +210,11 @@ void writeLEDs(int led1State, int led2State, int led3State){
 }
 
 
-<<<<<<< HEAD
-int spring(int k, int readings[]){
-    int position = sum_array(readings, TIME_READING_WINDOW);
-    int command = k*abs(position);
-    pin_write(&D[6], command);
-=======
 int spring(int k, int p0, int readings[]){
     int direction= 3; 
-    int position = sum_array(readings, TIME_READING_WINDOW); //TODO: divide by TIme Window before subtraction?
+    int position = sum_array(readings, TIME_READING_WINDOW)/TIME_READING_WINDOW; //TODO: divide by TIme Window before subtraction?
     int distanceOff = position-p0;
-    int command = distanceOff/TIME_READING_WINDOW/k;
+    int command = distanceOff/k;
     //int derivative = sum_difference(readings,TIME_READING_WINDOW);
     if(command>0){
         direction=1;
@@ -217,13 +223,13 @@ int spring(int k, int p0, int readings[]){
         direction = 0;
     }
     writeMotor(abs(command), direction);
-    printf("Distance off IP is: %i, write direction is: %i for a command of: %i \n",distanceOff,direction,abs(command));
->>>>>>> 70fea336328921dfb1bebb4af728c536c7016ef5
+    //printf("Distance off IP is: %i, write direction is: %i for a command of: %i \n",distanceOff,direction,abs(command));
 }
 
 int damper(int k, int readings[]){
     int motorDirection = 0; //Should the motor spin right or left?
-    int derivative = sum_difference(readings,TIME_READING_WINDOW);
+    derivative = sum_difference(readings,TIME_READING_WINDOW);
+    command = derivative/TIME_READING_WINDOW/k;
     int writeCommand = abs(derivative/TIME_READING_WINDOW/k);
     if(derivative>0){
         //Actuate to the right = 1:
@@ -266,13 +272,14 @@ int wall(int p0, int readings[], int t0, int t1, int t2, int t3){
         direction = 1;
     }
     writeMotor(writeVal, direction);
-    printf("Positon is: %i, motor direction is: %i\n", position, direction);
+    //printf("Positon is: %i, motor direction is: %i\n", position, direction);
 }
 
 void VendorRequests(void) {
     WORD temp;
 
     switch (USB_setup.bRequest) {
+    
         case 0:
             state = USB_setup.wValue.w;
             BD[EP0IN].bytecount = 0;    // set EP0 IN byte count to 0 
@@ -292,10 +299,10 @@ void VendorRequests(void) {
             }
             break;
         case 2:
-            temp.w = position;
+            temp.w = command;
             BD[EP0IN].address[0] = temp.b[0];
             BD[EP0IN].address[1] = temp.b[1];
-            temp.w = val1;
+            temp.w = position;
             BD[EP0IN].address[2] = temp.b[0];
             BD[EP0IN].address[3] = temp.b[1];
             BD[EP0IN].bytecount = 4;    // set EP0 IN byte count to 4
@@ -328,7 +335,7 @@ void VendorRequestsOut(void) {
 
 int main(){
     printf("Hi, Halie. You rock my socks! Emily, you're a super lazer kitty!'\n");
-    setup();
+    p0 = setup();
  
     //Controler receives the state over USB
     /*0 is spring
@@ -337,7 +344,7 @@ int main(){
     3 is wall*/
     position = 0;
     int KDd = 1; //constant fof the damper derivative control!
-    int KSs = 10; //Constant for spring setting
+    int KSs = 8; //Constant for spring setting
     int Kt = 100; //Motor control constant for texture mode!
     
     /*Make an array to hole our position readings and initialize its elements to 0. */
@@ -373,7 +380,7 @@ int main(){
            case 0:
                 //The spring mode!  
                 writeLEDs(1,0,0);
-                spring(KSs, readings);
+                spring(KSs, p0, readings);
                 break;
             case 1:
                 //The damper mode!!!
