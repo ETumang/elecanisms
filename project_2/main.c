@@ -6,6 +6,7 @@
 #include "uart.h"
 #include <stdio.h>
 #include "positionCount.h"
+#include "usb.h"
 
 #define TIME_READING_WINDOW 50
 #define SET_POINT 59060
@@ -29,6 +30,9 @@
 int get_pos = 1;
 int send_data = 0;
 int motorDirection=1;
+int state = 3;
+int val1 = 0;
+int val2 = 0;
 //Motor commands above this value make it go right, commands below this value go left:
 int motorDirectionThreshold = 200; 
 
@@ -114,6 +118,8 @@ int setup(void){
 	init_timer();
 	init_uart();
 
+    //led_on(&led2);
+
 	uint16_t rawPos;
 	long int updatedPos = 0;
 	long int rawDiff;
@@ -152,12 +158,13 @@ int setup(void){
 	timer_enableInterrupt(&timer1);
 	timer_every(&timer1, DATA_PERIOD, data_timing);
 
-	led_on(&led1);
+	//led_on(&led1);
     
 	oc_pwm(&oc1, &D[6], NULL, 500, 0);//go right
     oc_pwm(&oc2, &D[5], NULL, 500, 0);//go left
     
-    int j=0; int p0=0;
+    int j=0; 
+    int p0=0;
     for(j=0; i<=90; i++){
         p0=p0 + (update_pos(pin_read(&A[0]))-59215)/-17;
     }
@@ -177,6 +184,7 @@ void delay(int delayTime){
         0.789/.007*300.9/.90001;
     }
 }
+
 
 void writeMotor(int writeAmount, int motorDirectionDes){
     int Km = 100; //Motor write command constant!
@@ -294,9 +302,62 @@ int wall(){
     
 }
 
+void VendorRequests(void) {
+    WORD temp;
+
+    switch (USB_setup.bRequest) {
+        case 0:
+            state = USB_setup.wValue.w;
+            BD[EP0IN].bytecount = 0;    // set EP0 IN byte count to 0 
+            BD[EP0IN].status = 0xC8;    // send packet as DATA1, set UOWN bit
+            break;
+        case 1:
+            state = 1;
+            val1 = USB_setup.wValue.w;
+            val2 = USB_setup.wIndex.w;
+            BD[EP0IN].bytecount = 0;    // set EP0 IN byte count to 0 
+            BD[EP0IN].status = 0xC8;    // send packet as DATA1, set UOWN bit
+            break;
+        // case 2:
+        //     state = 2;
+        //     temp.w = val1;
+        //     BD[EP0IN].address[0] = temp.b[0];
+        //     BD[EP0IN].address[1] = temp.b[1];
+        //     temp.w = val2;
+        //     BD[EP0IN].address[2] = temp.b[0];
+        //     BD[EP0IN].address[3] = temp.b[1];
+        //     BD[EP0IN].bytecount = 4;    // set EP0 IN byte count to 4
+        //     BD[EP0IN].status = 0xC8;    // send packet as DATA1, set UOWN bit
+        //     break;            
+        // case 3:
+        //     state = 3;
+        //     //printf("val1 = %u, val2 = %u\n", val1, val2);
+        //     BD[EP0IN].bytecount = 0;    // set EP0 IN byte count to 0
+        //     BD[EP0IN].status = 0xC8;    // send packet as DATA1, set UOWN bit
+        //     break;
+        default:
+            USB_error_flags |= 0x01;    // set Request Error Flag
+    }
+}
+
+void VendorRequestsIn(void) {
+    switch (USB_request.setup.bRequest) {
+        default:
+            USB_error_flags |= 0x01;                    // set Request Error Flag
+    }
+}
+
+void VendorRequestsOut(void) {
+    switch (USB_request.setup.bRequest) {
+        default:
+            USB_error_flags |= 0x01;                    // set Request Error Flag
+    }
+}
+
 int main(){
     printf("Hi, Halie. You rock my socks! Emily, you're a super lazer kitty!'\n");
     int p0 = setup();
+  
     //Controler receives the state over USB
     /*0 is spring
     1 is damper
@@ -315,16 +376,19 @@ int main(){
         readings[i]=0;
     }
     writeLEDs(0,0,0);
-    
+    InitUSB();
+    while (USB_USWSTAT!=CONFIG_STATE) {     // while the peripheral is not configured...
+        ServiceUSB();                       // ...service USB requests
+    }
+
     while(1){
-        position = (update_pos(pin_read(&A[0]))-59215)/-17;
-        //position=position+20; //TODO:Remove this evil beast!
-        //printf("Posion reading new is: ,%d\n",position);
-        //Shift every element in the array one space to the left
-/*        printf("\n");*/
+        int position = (update_pos(pin_read(&A[0]))-59215)/-17;
+        ServiceUSB();
+    //     printf("Posion reading new is: ,%d\n",position);
+    //     //Shift every element in the array one space to the left
         for(i=1; i<=TIME_READING_WINDOW;i++){
             readings[i-1]=readings[i];
-        }
+    }
         readings[TIME_READING_WINDOW]=position;
         
         //Print out contents of position array
@@ -333,9 +397,11 @@ int main(){
 /*        }*/
         
         //printf("\n");
+
         int state = 0; //TODO: Hardcode state for testing!
+
         switch (state){
-            case 0:
+           case 0:
                 //The spring mode!  
                 writeLEDs(1,0,0);
                 spring(KSs, p0, readings);
@@ -345,7 +411,7 @@ int main(){
                 writeLEDs(0,1,0);
                 damper(KDd, readings);
                 break;
-            case 2:
+            case 5:
                 //Texture mode!
                 writeLEDs(1,1,0);
                 texture(Kt);
@@ -358,4 +424,3 @@ int main(){
         }
     }
 }
-
