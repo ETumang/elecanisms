@@ -142,36 +142,38 @@ void setup(void){
     oc_pwm(&oc2, &D[5], NULL, 500, 0);//go left
 }
 
-void writeMotor(int command, int motorDirection){
+void writeMotor(int writeAmount, int motorDirectionDes){
     int Km = 100; //Motor write command constant!
-    int writeAmount = 0;
     int controlCommand = 0; 
-    if (motorDirection == 1){
-        writeAmount = command - motorDirectionThreshold;
+    
+    //Case spin to the right:
+    if (motorDirectionDes == 1){
         controlCommand = writeAmount *Km;
         //Write to motor direction 1 (right)
         if (motorDirection==1){
-            pin_write(&D[6],DutyCycle);
+            pin_write(&D[6],controlCommand);
         }
         if (motorDirection==0){
             pin_write(&D[6],0);
-            pin_write(&D[5], DutyCycle);
+            pin_write(&D[5], controlCommand);
             motorDirection=1;
         }
     }
     
-    if (command<motorDirectionThreshold){
+    //Case spin to the left
+    if (motorDirectionDes == 0){
         //Write to motor direction left (0)
+        controlCommand = writeAmount *Km;
         if (motorDirection==1){
-            pin_write(&D[6],command+K);
+            pin_write(&D[6],controlCommand);
         }
         if (motorDirection==0){
             pin_write(&D[5],0);
-            pin_write(&D[6], command + K);
+            pin_write(&D[6], controlCommand);
             motorDirection=1;   
         }
     }
-    printf("Write amount is: %i",writeAmount);
+    //printf("Write amount is: %i , Write direction is: %i",writeAmount,motorDirectionDes);
 }
 
 
@@ -211,36 +213,30 @@ int spring(int k, int readings[]){
 
 
 int damper(int k, int readings[]){
-    int writeCommand = 0;
     int motorDirection = 0; //Should the motor spin right or left?
     int derivative = sum_difference(readings,TIME_READING_WINDOW);
-    int command = abs(derivative/TIME_READING_WINDOW/k);
+    int writeCommand = abs(derivative/TIME_READING_WINDOW/k);
     if(derivative>0){
         //Actuate to the right = 1:
         motorDirection = 1;
-        writeCommand = command+motorDirectionThreshold;
     }
     if(derivative<0){
         //actuate motor left = 0:
         motorDirection = 0;
-        writeCommand = motorDirectionThreshold-command;
     }
+    
     writeMotor(writeCommand, motorDirection);
-    printf("Motor derivative position is: %i \nCommand value is: %i \n Write command is: %i\n", derivative, command, writeCommand);
+    printf("Motor direction of: %i with command of: %i from derivative: %i \n", motorDirection, writeCommand, derivative);
+    //printf("Motor derivative position is: %i \nCommand value is: %i \n Write command is: %i\n", derivative, command, writeCommand);
 }
 
 
-int texture(){
+int texture(int Kt){
     int text[11]={1,1,0,0,0,0,1,0,0,1};
     int i=0;
     for (i=0; i<=(sizeof(text)/sizeof(text[0])); i++){
-        if (text[i]==1){
-            pin_write(&D[6],(unsigned int) 30);
-        }
-        if (text[i]==0){
-            pin_write(&D[6],(unsigned int) 2);
-        }
-    }  
+        writeMotor(Kt, text[i]);
+    }
 }
 
 int wall(){
@@ -248,7 +244,7 @@ int wall(){
 }
 
 int main(){
-    printf("Hi, Halie. You rock my socks!\n");
+    printf("Hi, Halie. You rock my socks! Emily, you're a super lazer kitty!'\n");
     setup();
     //Controler receives the state over USB
     /*0 is spring
@@ -256,8 +252,9 @@ int main(){
     2 is texture
     3 is wall*/
     int position = 0;
-    int KDd = 120; //constant fof the damper derivative control!
+    int KDd = 1; //constant fof the damper derivative control!
     int KSs = 10; //Constant for spring setting
+    int Kt = 100; //Motor control constant for texture mode!
     
     /*Make an array to hole our position readings and initialize its elements to 0. */
     int readings[TIME_READING_WINDOW+1];
@@ -285,13 +282,12 @@ int main(){
 /*        }*/
         
         //printf("\n");
-        int state = 1; //TODO: Hardcode state for testing!
+        int state = 2; //TODO: Hardcode state for testing!
         switch (state){
             case 0:
                 //The spring mode!  
                 writeLEDs(1,0,0);
                 //spring(KSs, readings);
-                writeMotor(20);
                 break;
             case 1:
                 //The damper mode!!!
