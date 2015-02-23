@@ -7,7 +7,7 @@ DAMPER = 1
 TEXTURE = 2
 WALL = 3
 
-usb = usbComm.usbStates();
+#usb = usbComm.usbStates();
 
 def onButton(button, number):
 	if number == 0:
@@ -29,6 +29,9 @@ grid = Gtk.Grid()
 win.add(grid)
 hbox = Gtk.Box(spacing=6)
 grid.add(hbox)
+
+entryField = Gtk.Entry()
+grid.attach(entryField,0,1,2,2)
 
 
 spring_button = Gtk.RadioButton.new_with_label_from_widget(None, "Spring Mode")
