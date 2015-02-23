@@ -142,8 +142,13 @@ void setup(void){
     oc_pwm(&oc2, &D[5], NULL, 500, 0);//go left
 }
 
-void writeMotor(int command){
-    if (command>=motorDirectionThreshold){
+void writeMotor(int command, int motorDirection){
+    int Km = 100; //Motor write command constant!
+    int writeAmount = 0;
+    int controlCommand = 0; 
+    if (motorDirection == 1){
+        writeAmount = command - motorDirectionThreshold;
+        controlCommand = writeAmount *Km;
         //Write to motor direction 1 (right)
         if (motorDirection==1){
             pin_write(&D[6],DutyCycle);
@@ -166,6 +171,7 @@ void writeMotor(int command){
             motorDirection=1;   
         }
     }
+    printf("Write amount is: %i",writeAmount);
 }
 
 
@@ -205,18 +211,22 @@ int spring(int k, int readings[]){
 
 
 int damper(int k, int readings[]){
-    int derivative = sum_difference(readings,30);
-    int command = abs(k*derivative/TIME_READING_WINDOW);
+    int writeCommand = 0;
+    int motorDirection = 0; //Should the motor spin right or left?
+    int derivative = sum_difference(readings,TIME_READING_WINDOW);
+    int command = abs(derivative/TIME_READING_WINDOW/k);
     if(derivative>0){
-        //Actuate to the right
-        writeMotor(command+motorDirectionThreshold);
+        //Actuate to the right = 1:
+        motorDirection = 1;
+        writeCommand = command+motorDirectionThreshold;
     }
     if(derivative<0){
-        //actuate motor left:
-        writeMotor(motorDirectionThreshold-command);
+        //actuate motor left = 0:
+        motorDirection = 0;
+        writeCommand = motorDirectionThreshold-command;
     }
-    printf("Moror derivative position is: %i ,  command value is: %i \n", derivative, command);
-/*    delay(10);*/
+    writeMotor(writeCommand, motorDirection);
+    printf("Motor derivative position is: %i \nCommand value is: %i \n Write command is: %i\n", derivative, command, writeCommand);
 }
 
 
@@ -246,12 +256,13 @@ int main(){
     2 is texture
     3 is wall*/
     int position = 0;
-    int KDd = 300; //constant fof the damper derivative control!
+    int KDd = 120; //constant fof the damper derivative control!
     int KSs = 10; //Constant for spring setting
     
     /*Make an array to hole our position readings and initialize its elements to 0. */
     int readings[TIME_READING_WINDOW+1];
     int i = 0; 
+    //Initialize array to zero, so we don't get weird errors when there's strange values in memory!
     for(i; i<TIME_READING_WINDOW; i++){
         readings[i]=0;
     }
@@ -260,16 +271,20 @@ int main(){
     while(1){
         position = (update_pos(pin_read(&A[0]))-59215)/-17;
         //position=position+20; //TODO:Remove this evil beast!
-        printf("Posion reading new is: ,%d\n",position);
+        //printf("Posion reading new is: ,%d\n",position);
         //Shift every element in the array one space to the left
+/*        printf("\n");*/
         for(i=1; i<=TIME_READING_WINDOW;i++){
             readings[i-1]=readings[i];
         }
         readings[TIME_READING_WINDOW]=position;
-        for(i=0; i<TIME_READING_WINDOW; i++){
-            printf("[ %d ]",readings[i]);
-        }
-        printf("\n");
+        
+        //Print out contents of position array
+/*        for(i=0; i<TIME_READING_WINDOW; i++){*/
+/*            printf("[ %d ]",readings[i]);*/
+/*        }*/
+        
+        //printf("\n");
         int state = 1; //TODO: Hardcode state for testing!
         switch (state){
             case 0:
@@ -282,7 +297,6 @@ int main(){
                 //The damper mode!!!
                 writeLEDs(0,1,0);
                 damper(KDd, readings);
-                //writeMotor(300);
                 break;
             case 2:
                 //Texture mode!
