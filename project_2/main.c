@@ -197,30 +197,28 @@ void writeLEDs(int led1State, int led2State, int led3State){
     led_write(&led3, led3State);
 }
 
-void wallMotion(int position){
-    /*Creates the texture motion for the wall state, given the position of the 
-    handle controler. Does this by writing the motor command to high if the 
-    handle's position is within two angle readings. */
-    unsigned int writeVal = 300;
-    int writeState = 0;
-    if ((position<60) && (position<400)){
-        pin_write(&D[6], writeVal);
-        writeState=1;
-    }
-    if ((position<15) && (position>0) ){
-        pin_write(&D[6], writeVal);
-        writeState=1;
-    }
-    if (writeState==0){
-    /*If it's not in the range of the walls, write the motor command to low. */
-        pin_write(&D[6], 0);    
-    }
-}
 
+<<<<<<< HEAD
 int spring(int k, int readings[]){
     int position = sum_array(readings, TIME_READING_WINDOW);
     int command = k*abs(position);
     pin_write(&D[6], command);
+=======
+int spring(int k, int p0, int readings[]){
+    int direction= 3; 
+    int position = sum_array(readings, TIME_READING_WINDOW); //TODO: divide by TIme Window before subtraction?
+    int distanceOff = position-p0;
+    int command = distanceOff/TIME_READING_WINDOW/k;
+    //int derivative = sum_difference(readings,TIME_READING_WINDOW);
+    if(command>0){
+        direction=1;
+    }
+    if (command<0){
+        direction = 0;
+    }
+    writeMotor(abs(command), direction);
+    printf("Distance off IP is: %i, write direction is: %i for a command of: %i \n",distanceOff,direction,abs(command));
+>>>>>>> 70fea336328921dfb1bebb4af728c536c7016ef5
 }
 
 int damper(int k, int readings[]){
@@ -250,8 +248,25 @@ int texture(int Kt){
     }
 }
 
-int wall(){
+int wall(int p0, int readings[], int t0, int t1, int t2, int t3){
+    /*Creates the texture motion for the wall state, given the position of the 
+    handle controler. Does this by writing the motor command to high if the 
+    handle's position is within two angle readings. */
+    unsigned int writeVal = 200;
+    int position = sum_array(readings, TIME_READING_WINDOW)/TIME_READING_WINDOW;
+    int writeState = 0;
+    int direction = 3;
     
+    if ( (position <t1)&&(position>0)){
+        //First wall, actuate right:
+        direction = 0;
+    }
+    if ((position>t2)){
+        //Second wall, actuate left
+        direction = 1;
+    }
+    writeMotor(writeVal, direction);
+    printf("Positon is: %i, motor direction is: %i\n", position, direction);
 }
 
 void VendorRequests(void) {
@@ -374,7 +389,7 @@ int main(){
                 //Wall mode!
 
                 writeLEDs(0,0,1);
-                wall();
+                wall(p0, readings, -300, 200, 500, 700);
                 break;   
         }
     }
