@@ -8,7 +8,7 @@
 #include "positionCount.h"
 #include "usb.h"
 
-#define TIME_READING_WINDOW 30
+#define TIME_READING_WINDOW 50
 #define SET_POINT 59060
 #define KP 40
 //KI will be what the integral control is devided by, 
@@ -35,6 +35,19 @@ int val1 = 0;
 int val2 = 0;
 //Motor commands above this value make it go right, commands below this value go left:
 int motorDirectionThreshold = 200; 
+
+/*void DelayTimer1Init(void) { // Set up timer 1 for microsecond delay function*/
+/*    T1CON = 0x0000; // Timer off, 16-bit, 1:1 prescale, gating off*/
+/*}*/
+
+/*void UsDelay(unsigned int udelay) {*/
+/*    TMR1 = 0;*/
+/*    PR1 = udelay * 15; // Number of ticks per microsecond*/
+/*    IFS0bits.T1IF = 0; // Reset interrupt flag*/
+/*    T1CONbits.TON = 1;*/
+/*    while (!IFS0bits.T1IF); // Wait here for timeout*/
+/*    T1CONbits.TON = 0;*/
+/*}*/
 
 int get_amount(char *line) {
     // return the number in a string such as "r1200" as an int
@@ -94,8 +107,11 @@ void data_timing(_TIMER *timer){
 	get_pos = 1;
 }
 
-void setup(void){
-
+int setup(void){
+    
+    //Initialize timer funzies!!!
+    //DelayTimer1Init();
+    
 	init_pin();
 	init_oc();
 	init_ui();
@@ -146,7 +162,29 @@ void setup(void){
     
 	oc_pwm(&oc1, &D[6], NULL, 500, 0);//go right
     oc_pwm(&oc2, &D[5], NULL, 500, 0);//go left
+    
+    int j=0; 
+    int p0=0;
+    for(j=0; i<=90; i++){
+        p0=p0 + (update_pos(pin_read(&A[0]))-59215)/-17;
     }
+    p0 = p0/90;
+    return p0;
+}
+
+void delay(int delayTime){
+    int j = 0;
+    for(j=0; j<=delayTime; j++){
+        0.6+0.3/0.2*.009/.007+.006-.90001+0.789/.007*300.9/.90001;
+        0.6+0.3/0.2;
+        0.6+0.3/0.2;
+        0.6+0.3/0.2;
+        0.789/.007*300.9/.90001;
+        0.789/.007*300.9/.90001;
+        0.789/.007*300.9/.90001;
+    }
+}
+
 
 void writeMotor(int writeAmount, int motorDirectionDes){
     int Km = 100; //Motor write command constant!
@@ -211,15 +249,25 @@ void wallMotion(int position){
     }
 }
 
-int spring(int k, int readings[]){
+int spring(int k, int p0, int readings[]){
+    int direction= 3; 
     int position = sum_array(readings, TIME_READING_WINDOW);
-    int command = k*abs(position);
-    pin_write(&D[6], command);
+    int distanceOff = position-p0;
+    int command = distanceOff/TIME_READING_WINDOW/k;
+    //int derivative = sum_difference(readings,TIME_READING_WINDOW);
+    if(command>0){
+        direction=1;
+    }
+    if (command<0){
+        direction = 0;
+    }
+    writeMotor(abs(command), direction);
+    printf("Distance off IP is: %i, write direction is: %i for a command of: %i \n",distanceOff,direction,abs(command));
 }
 
 
 int damper(int k, int readings[]){
-    int motorDirection = 0; //Should the motor spin right or left?
+    int motorDirection = 3; //Should the motor spin right or left?
     int derivative = sum_difference(readings,TIME_READING_WINDOW);
     int writeCommand = abs(derivative/TIME_READING_WINDOW/k);
     if(derivative>0){
@@ -240,8 +288,13 @@ int damper(int k, int readings[]){
 int texture(int Kt){
     int text[11]={1,1,0,0,0,0,1,0,0,1};
     int i=0;
+    int j=0;
+    long delayTime = 2000000000;
     for (i=0; i<=(sizeof(text)/sizeof(text[0])); i++){
         writeMotor(Kt, text[i]);
+        printf("Motor direction is: %i                at index %i\n",text[i],i);
+        //The most ghetto delay function ever
+        delay(delayTime);
     }
 }
 
@@ -302,14 +355,9 @@ void VendorRequestsOut(void) {
 }
 
 int main(){
-<<<<<<< HEAD
     printf("Hi, Halie. You rock my socks! Emily, you're a super lazer kitty!'\n");
-=======
+    int p0 = setup();
   
-    //printf("Hi, Halie. You rock my socks!\n");
->>>>>>> USB
-    setup();
- 
     //Controler receives the state over USB
     /*0 is spring
     1 is damper
@@ -317,8 +365,8 @@ int main(){
     3 is wall*/
     int position = 0;
     int KDd = 1; //constant fof the damper derivative control!
-    int KSs = 10; //Constant for spring setting
-    int Kt = 100; //Motor control constant for texture mode!
+    int KSs = 2; //Constant for spring setting
+    int Kt = 120; //Motor control constant for texture mode!
     
     /*Make an array to hole our position readings and initialize its elements to 0. */
     int readings[TIME_READING_WINDOW+1];
@@ -334,24 +382,14 @@ int main(){
     }
 
     while(1){
-<<<<<<< HEAD
-        position = (update_pos(pin_read(&A[0]))-59215)/-17;
-        //position=position+20; //TODO:Remove this evil beast!
-        //printf("Posion reading new is: ,%d\n",position);
-        //Shift every element in the array one space to the left
-/*        printf("\n");*/
-        for(i=1; i<=TIME_READING_WINDOW;i++){
-=======
         int position = (update_pos(pin_read(&A[0]))-59215)/-17;
         ServiceUSB();
     //     printf("Posion reading new is: ,%d\n",position);
     //     //Shift every element in the array one space to the left
-    for(i=1; i<TIME_READING_WINDOW;i++){
->>>>>>> USB
+        for(i=1; i<=TIME_READING_WINDOW;i++){
             readings[i-1]=readings[i];
     }
         readings[TIME_READING_WINDOW]=position;
-<<<<<<< HEAD
         
         //Print out contents of position array
 /*        for(i=0; i<TIME_READING_WINDOW; i++){*/
@@ -359,31 +397,24 @@ int main(){
 /*        }*/
         
         //printf("\n");
-        int state = 2; //TODO: Hardcode state for testing!
-=======
 
-    //     //state = 1; //TODO: Hardcode state for testing!
->>>>>>> USB
+        int state = 0; //TODO: Hardcode state for testing!
+
         switch (state){
            case 0:
                 //The spring mode!  
                 writeLEDs(1,0,0);
-                //spring(KSs, readings);
+                spring(KSs, p0, readings);
                 break;
             case 1:
                 //The damper mode!!!
                 writeLEDs(0,1,0);
-<<<<<<< HEAD
                 damper(KDd, readings);
-=======
-                //damper(KDd, readings);
-                //writeMotor(300);
->>>>>>> USB
                 break;
             case 5:
                 //Texture mode!
                 writeLEDs(1,1,0);
-                texture();
+                texture(Kt);
                 break;
             case 3: 
                 //Wall mode!
