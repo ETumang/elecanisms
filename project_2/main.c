@@ -36,9 +36,6 @@ int val2 = 0;
 int position = 0;
 int p0;
 
-int derivative;
-int command;
-
     int KDd = 1; //constant fof the damper derivative control!
     int KSs = 10; //Constant for spring setting
     int Kt = 100; //Motor control constant for texture mode!
@@ -228,8 +225,10 @@ int spring(int k, int p0, int readings[]){
 
 int damper(int k, int readings[]){
     int motorDirection = 0; //Should the motor spin right or left?
-    derivative = sum_difference(readings,TIME_READING_WINDOW);
-    command = derivative/TIME_READING_WINDOW/k;
+    int derivative = sum_difference(readings,TIME_READING_WINDOW);
+    val1 = derivative;
+    int command = derivative/TIME_READING_WINDOW/k;
+    val2 = command;
     int writeCommand = abs(derivative/TIME_READING_WINDOW/k);
     if(derivative>0){
         //Actuate to the right = 1:
@@ -239,10 +238,12 @@ int damper(int k, int readings[]){
         //actuate motor left = 0:
         motorDirection = 0;
     }
+
+    //val1 = writeCommand;
     
     writeMotor(writeCommand, motorDirection);
-    //printf("Motor direction of: %i with command of: %i from derivative: %i \n", motorDirection, writeCommand, derivative);
-    //printf("Motor derivative position is: %i \nCommand value is: %i \n Write command is: %i\n", derivative, command, writeCommand);
+    printf("Motor direction of: %i with command of: %i from derivative: %i \n", motorDirection, writeCommand, derivative);
+    printf("Motor derivative position is: %i \nCommand value is: %i \n Write command is: %i\n", derivative, command, writeCommand);
 }
 
 
@@ -250,6 +251,7 @@ int texture(int Kt){
     int text[11]={1,1,0,0,0,0,1,0,0,1};
     int i=0;
     for (i=0; i<=(sizeof(text)/sizeof(text[0])); i++){
+        val1 = text[i];
         writeMotor(Kt, text[i]);
     }
 }
@@ -299,10 +301,10 @@ void VendorRequests(void) {
             }
             break;
         case 2:
-            temp.w = command;
+            temp.w = val1;
             BD[EP0IN].address[0] = temp.b[0];
             BD[EP0IN].address[1] = temp.b[1];
-            temp.w = position;
+            temp.w = val2;
             BD[EP0IN].address[2] = temp.b[0];
             BD[EP0IN].address[3] = temp.b[1];
             BD[EP0IN].bytecount = 4;    // set EP0 IN byte count to 4
