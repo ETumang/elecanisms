@@ -230,6 +230,11 @@ int damper(int k, int readings[]){
     int command = derivative/TIME_READING_WINDOW/k;
     val2 = command;
     int writeCommand = abs(derivative/TIME_READING_WINDOW/k);
+    int l=0;
+    for (l=0;l<=TIME_READING_WINDOW; l++){
+    printf("%i,",readings[l]);
+    printf("\n");
+}
     if(derivative>0){
         //Actuate to the right = 1:
         motorDirection = 1;
@@ -345,6 +350,7 @@ int main(){
     2 is texture
     3 is wall*/
     position = 0;
+    
     int KDd = 1; //constant fof the damper derivative control!
     int KSs = 8; //Constant for spring setting
     int Kt = 100; //Motor control constant for texture mode!
@@ -365,6 +371,7 @@ int main(){
     while(1){
 
         position = (update_pos(pin_read(&A[0]))-59215)/-17;
+    
         //position=position+20; //TODO:Remove this evil beast!
         //printf("Posion reading new is: ,%d\n",position);
         //Shift every element in the array one space to the left
@@ -377,6 +384,7 @@ int main(){
             readings[i-1]=readings[i];
     }
         readings[TIME_READING_WINDOW]=position;
+        printf("%i\n",position);
 
         switch (state){
            case 0:
