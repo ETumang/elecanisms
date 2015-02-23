@@ -288,15 +288,15 @@ int wall(int p0, int readings[], int t0, int t1, int t2, int t3){
     int writeState = 0;
     int direction = 3;
     
-    if ((position>t0) && (position <t1)){
+    if ( (position <t1)&&(position>0)){
         //First wall, actuate right:
-        direction = 1;
-    }
-    if ((position>t2) && (position<t3)){
-        //Second wall, actuate left
         direction = 0;
     }
-    writeMotor(writeVal,direction);
+    if ((position>t2)){
+        //Second wall, actuate left
+        direction = 1;
+    }
+    writeMotor(writeVal, direction);
     printf("Positon is: %i, motor direction is: %i\n", position, direction);
 }
 
