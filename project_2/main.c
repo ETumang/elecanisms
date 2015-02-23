@@ -245,6 +245,7 @@ int main(){
     1 is damper
     2 is texture
     3 is wall*/
+    int position = 0;
     int KDd = 300; //constant fof the damper derivative control!
     int KSs = 10; //Constant for spring setting
     
@@ -257,13 +258,18 @@ int main(){
     writeLEDs(0,0,0);
     
     while(1){
-        int position = (update_pos(pin_read(&A[0]))-59215)/-17;
+        //position = (update_pos(pin_read(&A[0]))-59215)/-17;
+        position=position+20; //TODO:Remove this evil beast!
         printf("Posion reading new is: ,%d\n",position);
         //Shift every element in the array one space to the left
-        for(i=1; i<TIME_READING_WINDOW;i++){
+        for(i=1; i<=TIME_READING_WINDOW;i++){
             readings[i-1]=readings[i];
         }
         readings[TIME_READING_WINDOW]=position;
+        for(i=0; i<TIME_READING_WINDOW; i++){
+            printf("[ %d ]",readings[i]);
+        }
+        printf("\n");
         int state = 1; //TODO: Hardcode state for testing!
         switch (state){
             case 0:
