@@ -279,7 +279,7 @@ int texture(int Kt){
     }
 }
 
-int wall(){
+int wall(int p0){
     /*Creates the texture motion for the wall state, given the position of the 
     handle controler. Does this by writing the motor command to high if the 
     handle's position is within two angle readings. */
@@ -416,7 +416,7 @@ int main(){
             case 3: 
                 //Wall mode!
                 writeLEDs(0,0,1);
-                wall();
+                wall(p0);
                 break;   
         }
     }
