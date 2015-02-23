@@ -8,6 +8,7 @@
 #include "positionCount.h"
 #include "usb.h"
 
+
 #define TIME_READING_WINDOW 30
 #define SET_POINT 59060
 #define KP 40
@@ -30,9 +31,6 @@
 int get_pos = 1;
 int send_data = 0;
 int motorDirection=1;
-int state;
-//Motor commands above this value make it go right, commands below this value go left:
-int motorDirectionThreshold = 200; 
 
 int get_amount(char *line) {
     // return the number in a string such as "r1200" as an int
@@ -101,16 +99,7 @@ void setup(void){
 	init_uart();
     InitUSB();
 
-	uint16_t rawPos;
-	long int updatedPos = 0;
-	long int rawDiff;
-	long int lastRawPos=0;
-	long int lastLastRawPos;
-	long int lastRawDiff;
-	long int rawOffset;
-	long int lastRawOffset;
-	int flips;
-	long int offset;
+	int position;
 	int i;
 
 	timer_setPeriod(&timer1, .001);
@@ -146,7 +135,7 @@ void setup(void){
 }
 
 void writeMotor(int command){
-    if (command>=motorDirectionThreshold){
+    if (command>=200){
         //Write to motor direction 1 (right)
         if (motorDirection==1){
             pin_write(&D[6],DutyCycle);
@@ -158,7 +147,7 @@ void writeMotor(int command){
         }
     }
     
-    if (command<motorDirectionThreshold){
+    if (command<200){
         //Write to motor direction left (0)
         if (motorDirection==1){
             pin_write(&D[6],command+K);
@@ -186,7 +175,7 @@ void wallMotion(int position){
     handle's position is within two angle readings. */
     unsigned int writeVal = 300;
     int writeState = 0;
-    if ((position<60) && (position<400)){
+    if ((position<60) && (position>35)){
         pin_write(&D[6], writeVal);
         writeState=1;
     }
@@ -208,18 +197,9 @@ int spring(int k, int readings[]){
 
 
 int damper(int k, int readings[]){
-    int derivative = sum_difference(readings,30);
-    int command = abs(k*derivative/TIME_READING_WINDOW);
-    if(derivative>0){
-        //Actuate to the right
-        writeMotor(command+motorDirectionThreshold);
-    }
-    if(derivative<0){
-        //actuate motor left:
-        writeMotor(motorDirectionThreshold-command);
-    }
-    printf("Moror derivative position is: %i ,  command value is: %i \n", derivative, command);
-/*    delay(10);*/
+    int derivative = sum_difference(readings,30)/TIME_READING_WINDOW;
+    int command = k*derivative;
+    pin_write(&D[6], command);
 }
 
 
@@ -236,37 +216,16 @@ int texture(){
     }  
 }
 
-int wall(){
-    
-}
-
-void VendorRequests(void){
-    state = USB_setup.bRequest;
-}
-
-void VendorRequestsIn(void) {
-    switch (USB_request.setup.bRequest) {
-        default:
-            USB_error_flags |= 0x01;                    // set Request Error Flag
-    }
-}
-
-void VendorRequestsOut(void) {
-    switch (USB_request.setup.bRequest) {
-        default:
-            USB_error_flags |= 0x01;                    // set Request Error Flag
-    }
-}
+int wall(){}
 
 int main(){
-    printf("Hi, Halie. You rock my socks!\n");
     setup();
     //Controler receives the state over USB
     /*0 is spring
     1 is damper
     2 is texture
     3 is wall*/
-    int KDd = 300; //constant fof the damper derivative control!
+    int KDd = 40; //constant fof the damper derivative control!
     int KSs = 10; //Constant for spring setting
     
     /*Make an array to hole our position readings and initialize its elements to 0. */
@@ -275,19 +234,19 @@ int main(){
     for(i; i<TIME_READING_WINDOW; i++){
         readings[i]=0;
     }
-    writeLEDs(0,0,0);
     
     while(1){
-        int position = (update_pos(pin_read(&A[0]))-59215)/-17;
-        ServiceUSB();
-        printf("Posion reading new is: ,%d\n",position);
+        int position = (update_pos(pin_read(&A[0])<<6)-59215)/-17;
+	SendDataPacket();
+        
         //Shift every element in the array one space to the left
         for(i=1; i<TIME_READING_WINDOW;i++){
             readings[i-1]=readings[i];
         }
         readings[TIME_READING_WINDOW]=position;
-        //state = 1; //TODO: Hardcode state for testing!
-        switch (state){
+        ServiceUSB();
+        int state = 3; //TODO: Hardcode state for testing!
+        switch (USB_setup.bRequest){
             case 0:
                 //The spring mode!  
                 writeLEDs(1,0,0);
@@ -298,7 +257,6 @@ int main(){
                 //The damper mode!!!
                 writeLEDs(0,1,0);
                 damper(KDd, readings);
-                //writeMotor(300);
                 break;
             case 2:
                 //Texture mode!
