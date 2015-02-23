@@ -250,7 +250,7 @@ int main(){
     int KSs = 10; //Constant for spring setting
     
     /*Make an array to hole our position readings and initialize its elements to 0. */
-    int readings[TIME_READING_WINDOW];
+    int readings[TIME_READING_WINDOW+1];
     int i = 0; 
     for(i; i<TIME_READING_WINDOW; i++){
         readings[i]=0;
@@ -258,8 +258,8 @@ int main(){
     writeLEDs(0,0,0);
     
     while(1){
-        //position = (update_pos(pin_read(&A[0]))-59215)/-17;
-        position=position+20; //TODO:Remove this evil beast!
+        position = (update_pos(pin_read(&A[0]))-59215)/-17;
+        //position=position+20; //TODO:Remove this evil beast!
         printf("Posion reading new is: ,%d\n",position);
         //Shift every element in the array one space to the left
         for(i=1; i<=TIME_READING_WINDOW;i++){
