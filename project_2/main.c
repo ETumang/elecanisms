@@ -32,6 +32,19 @@ int motorDirection=1;
 //Motor commands above this value make it go right, commands below this value go left:
 int motorDirectionThreshold = 200; 
 
+/*void DelayTimer1Init(void) { // Set up timer 1 for microsecond delay function*/
+/*    T1CON = 0x0000; // Timer off, 16-bit, 1:1 prescale, gating off*/
+/*}*/
+
+/*void UsDelay(unsigned int udelay) {*/
+/*    TMR1 = 0;*/
+/*    PR1 = udelay * 15; // Number of ticks per microsecond*/
+/*    IFS0bits.T1IF = 0; // Reset interrupt flag*/
+/*    T1CONbits.TON = 1;*/
+/*    while (!IFS0bits.T1IF); // Wait here for timeout*/
+/*    T1CONbits.TON = 0;*/
+/*}*/
+
 int get_amount(char *line) {
     // return the number in a string such as "r1200" as an int
     int amount;
@@ -91,7 +104,10 @@ void data_timing(_TIMER *timer){
 }
 
 void setup(void){
-
+    
+    //Initialize timer funzies!!!
+    //DelayTimer1Init();
+    
 	init_pin();
 	init_oc();
 	init_ui();
@@ -145,7 +161,13 @@ void setup(void){
 void delay(int delayTime){
     int j = 0;
     for(j=0; j<=delayTime; j++){
+        0.6+0.3/0.2*.009/.007+.006-.90001+0.789/.007*300.9/.90001;
         0.6+0.3/0.2;
+        0.6+0.3/0.2;
+        0.6+0.3/0.2;
+        0.789/.007*300.9/.90001;
+        0.789/.007*300.9/.90001;
+        0.789/.007*300.9/.90001;
     }
 }
 
@@ -242,10 +264,10 @@ int texture(int Kt){
     int text[11]={1,1,0,0,0,0,1,0,0,1};
     int i=0;
     int j=0;
-    int delayTime = 150;
+    long delayTime = 2000000000;
     for (i=0; i<=(sizeof(text)/sizeof(text[0])); i++){
         writeMotor(Kt, text[i]);
-        
+        printf("Motor direction is: %i                at index %i\n",text[i],i);
         //The most ghetto delay function ever
         delay(delayTime);
     }
@@ -266,7 +288,7 @@ int main(){
     int position = 0;
     int KDd = 1; //constant fof the damper derivative control!
     int KSs = 10; //Constant for spring setting
-    int Kt = 100; //Motor control constant for texture mode!
+    int Kt = 120; //Motor control constant for texture mode!
     
     /*Make an array to hole our position readings and initialize its elements to 0. */
     int readings[TIME_READING_WINDOW+1];
