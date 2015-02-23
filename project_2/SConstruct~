@@ -1,4 +1,5 @@
 
+
 env = Environment(PIC = '24FJ128GB206', 
                   CC = 'xc16-gcc', 
                   PROGSUFFIX = '.cof', 
@@ -15,12 +16,12 @@ list = Builder(action = 'xc16-objdump -omf=coff -S -D $SOURCE > $TARGET',
                src_suffix = 'cof')
 env.Append(BUILDERS = {'List' : list})
 
-env.Program('main', ['main.c','usb.c',
+env.Program('main', ['main.c',
                       '../lib/timer.c',
 			'positionCount.c',
                       '../lib/ui.c',
                       '../lib/uart.c',
 			'../lib/pin.c',
-			'../lib/oc.c',])
+			'../lib/oc.c'])
 env.Hex('main')
 env.List('main')
