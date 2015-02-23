@@ -15,33 +15,20 @@ class usbStates:
 
     def close(self):
         self.dev = None
-    def spring(self):
+    def setMode(self, number):
         try:
-            self.dev.ctrl_transfer(0x40, self.SPRING)
-            print("spring")
+            self.dev.ctrl_transfer(0x40, 0,number)
+            print(number)
         except usb.core.USBError:
-            print "Could not set board to SPRING."
+            print "Could not set board mode."
 
-    def damper(self):
+    def updateVal(self, newVal,selector):
         try:
-            self.dev.ctrl_transfer(0x40, self.DAMPER)
-            print("damper")
+            self.dev.ctrl_transfer(0x40, 1, newVal,selector)
+            print(newVal)
         except usb.core.USBError:
-            print "Could not set board to DAMPER."
+            print "Could not set parameter."
 
-    def texture(self):
-        try:
-            self.dev.ctrl_transfer(0x40, self.TEXTURE)
-            print("texture")
-        except usb.core.USBError:
-            print "Could not set board to TEXTURE."
-
-    def wall(self):
-        try:
-            self.dev.ctrl_transfer(0x40, self.WALL)
-            print("wall")
-        except usb.core.USBError:
-            print "Could not set board to WALL."
 
 
 
