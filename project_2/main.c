@@ -229,25 +229,6 @@ void writeLEDs(int led1State, int led2State, int led3State){
     led_write(&led3, led3State);
 }
 
-void wallMotion(int position){
-    /*Creates the texture motion for the wall state, given the position of the 
-    handle controler. Does this by writing the motor command to high if the 
-    handle's position is within two angle readings. */
-    unsigned int writeVal = 300;
-    int writeState = 0;
-    if ((position<60) && (position<400)){
-        pin_write(&D[6], writeVal);
-        writeState=1;
-    }
-    if ((position<15) && (position>0) ){
-        pin_write(&D[6], writeVal);
-        writeState=1;
-    }
-    if (writeState==0){
-    /*If it's not in the range of the walls, write the motor command to low. */
-        pin_write(&D[6], 0);    
-    }
-}
 
 int spring(int k, int p0, int readings[]){
     int direction= 3; 
@@ -299,7 +280,23 @@ int texture(int Kt){
 }
 
 int wall(){
-    
+    /*Creates the texture motion for the wall state, given the position of the 
+    handle controler. Does this by writing the motor command to high if the 
+    handle's position is within two angle readings. */
+    unsigned int writeVal = 300;
+    int writeState = 0;
+    if ((position<60) && (position<400)){
+        pin_write(&D[6], writeVal);
+        writeState=1;
+    }
+    if ((position<15) && (position>0) ){
+        pin_write(&D[6], writeVal);
+        writeState=1;
+    }
+    if (writeState==0){
+    /*If it's not in the range of the walls, write the motor command to low. */
+        pin_write(&D[6], 0);    
+    }  
 }
 
 void VendorRequests(void) {
