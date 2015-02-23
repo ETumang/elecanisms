@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include "positionCount.h"
 
-#define TIME_READING_WINDOW 30
+#define TIME_READING_WINDOW 50
 #define SET_POINT 59060
 #define KP 40
 //KI will be what the integral control is devided by, 
@@ -157,11 +157,11 @@ int setup(void){
 	oc_pwm(&oc1, &D[6], NULL, 500, 0);//go right
     oc_pwm(&oc2, &D[5], NULL, 500, 0);//go left
     
-    int j=0; int p0=0; int numP0Read = 6;
-    for(j=0; i<=numP0Read; i++){
+    int j=0; int p0=0;
+    for(j=0; i<=90; i++){
         p0=p0 + (update_pos(pin_read(&A[0]))-59215)/-17;
     }
-    p0 = p0/numP0Read;
+    p0 = p0/90;
     return p0;
 }
 
@@ -242,15 +242,24 @@ void wallMotion(int position){
 }
 
 int spring(int k, int p0, int readings[]){
+    int direction= 3; 
     int position = sum_array(readings, TIME_READING_WINDOW);
-    int command = k*abs(position/TIME_READING_WINDOW);
-    int derivative = sum_difference(readings,TIME_READING_WINDOW);
-    pin_write(&D[6], command);
+    int distanceOff = position-p0;
+    int command = distanceOff/TIME_READING_WINDOW/k;
+    //int derivative = sum_difference(readings,TIME_READING_WINDOW);
+    if(command>0){
+        direction=1;
+    }
+    if (command<0){
+        direction = 0;
+    }
+    writeMotor(abs(command), direction);
+    printf("Distance off IP is: %i, write direction is: %i for a command of: %i \n",distanceOff,direction,abs(command));
 }
 
 
 int damper(int k, int readings[]){
-    int motorDirection = 0; //Should the motor spin right or left?
+    int motorDirection = 3; //Should the motor spin right or left?
     int derivative = sum_difference(readings,TIME_READING_WINDOW);
     int writeCommand = abs(derivative/TIME_READING_WINDOW/k);
     if(derivative>0){
@@ -295,7 +304,7 @@ int main(){
     3 is wall*/
     int position = 0;
     int KDd = 1; //constant fof the damper derivative control!
-    int KSs = 10; //Constant for spring setting
+    int KSs = 2; //Constant for spring setting
     int Kt = 120; //Motor control constant for texture mode!
     
     /*Make an array to hole our position readings and initialize its elements to 0. */
@@ -324,12 +333,12 @@ int main(){
 /*        }*/
         
         //printf("\n");
-        int state = 2; //TODO: Hardcode state for testing!
+        int state = 0; //TODO: Hardcode state for testing!
         switch (state){
             case 0:
                 //The spring mode!  
                 writeLEDs(1,0,0);
-                //spring(KSs, readings);
+                spring(KSs, p0, readings);
                 break;
             case 1:
                 //The damper mode!!!
