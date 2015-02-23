@@ -142,6 +142,13 @@ void setup(void){
     oc_pwm(&oc2, &D[5], NULL, 500, 0);//go left
 }
 
+void delay(int delayTime){
+    int j = 0;
+    for(j=0; j<=delayTime; j++){
+        0.6+0.3/0.2;
+    }
+}
+
 void writeMotor(int writeAmount, int motorDirectionDes){
     int Km = 100; //Motor write command constant!
     int controlCommand = 0; 
@@ -234,8 +241,13 @@ int damper(int k, int readings[]){
 int texture(int Kt){
     int text[11]={1,1,0,0,0,0,1,0,0,1};
     int i=0;
+    int j=0;
+    int delayTime = 150;
     for (i=0; i<=(sizeof(text)/sizeof(text[0])); i++){
         writeMotor(Kt, text[i]);
+        
+        //The most ghetto delay function ever
+        delay(delayTime);
     }
 }
 
@@ -297,7 +309,7 @@ int main(){
             case 2:
                 //Texture mode!
                 writeLEDs(1,1,0);
-                texture();
+                texture(Kt);
                 break;
             case 3: 
                 //Wall mode!
