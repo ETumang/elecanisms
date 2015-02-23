@@ -1,11 +1,16 @@
 from gi.repository import Gtk
 import usbComm
+import numpy
 
 
 SPRING = 0
 DAMPER = 1
 TEXTURE = 2
 WALL = 3
+
+getData = False
+pos = []
+
 
 #usb = usbComm.usbStates();
 
@@ -26,12 +31,16 @@ def onButton(button, number):
 		dial.set_adjustment(wall_loc)
 		sec_buffer.set_text("Wall Hardness")
 		sbox.show()
-	dial.update()
-	dial2.update()
+
 
 def updateValue(button,which):
 	#usb.updateVal(dial.get_adjustment().get_value(),which)
 	print dial.get_adjustment().get_value()
+
+def dataController(button):
+	getData = not getData
+	if not getData:
+		numpy.save('output',pos)
 
 # damper_button = Gtk.GtkRadioButton(spring_button, "Damper Mode")
 # damper_button.show
@@ -42,7 +51,7 @@ grid = Gtk.Grid()
 win.add(grid)
 hbox = Gtk.Box(spacing=6)
 grid.add(hbox)
-sbox = Gtk.Box()
+sbox = Gtk.Grid()
 
 spring_val= Gtk.Adjustment(100, 0, 128,1)
 damper_val = Gtk.Adjustment(100, 0, 128,1)
@@ -61,27 +70,27 @@ sec_buffer.set_text("Wall Hardness")
 secView = Gtk.TextView()
 secView.set_buffer(sec_buffer)
 
-dial2 = Gtk.SpinButton()
+dial2 = Gtk.HScale()
 dial2.set_adjustment(wallhardness)
+dial2.connect("value_changed", updateValue,1)
 
-submit_val2 = Gtk.Button("Set Value")
-submit_val2.connect("clicked",updateValue,2)
 
 sbox.add(secView)
-sbox.add(dial2)
-sbox.add(submit_val2)
-dial = Gtk.SpinButton()
+sbox.attach(dial2,0,1,1,1)
+
+dial = Gtk.HScale()
 dial.set_adjustment(spring_val)
+dial.connect("value_changed", updateValue,0)
 
 grid.attach(dial, 0,2,1,1)
-dial.update()
 
-submit_val = Gtk.Button("Set Value")
-submit_val.connect("clicked",updateValue,1)
-grid.attach(submit_val,1,2,1,1)
-
-grid.attach(sbox,0,3,3,1)
+grid.attach(sbox,0,3,10,2)
 sbox.hide()
+
+data_button = Gtk.Button(label = "Collect Data")
+data_button.connect("clicked", dataController)
+grid.attach(data_button,0,4,1,1)
+
 
 
 spring_button = Gtk.RadioButton.new_with_label_from_widget(None, "Spring Mode")
@@ -103,5 +112,13 @@ hbox.pack_start(wall_button, False, False, 0)
 
 win.connect("delete-event", Gtk.main_quit)
 win.show_all()
-Gtk.main()
+
+
+while True:
+    if (getData):
+    	pos.append(usbComm.getVal()[0])
+
+
+    while Gtk.events_pending():
+        Gtk.main_iteration()
 
