@@ -12,10 +12,10 @@ getData = False
 pos = []
 
 
-#usb = usbComm.usbStates();
+usb = usbComm.usbStates();
 
 def onButton(button, number):
-	#usb.setMode(number)
+	usb.setMode(number)
 	if number == 0:
 		dial.set_adjustment(spring_val)
 		sbox.hide()
@@ -34,11 +34,13 @@ def onButton(button, number):
 
 
 def updateValue(button,which):
-	#usb.updateVal(dial.get_adjustment().get_value(),which)
-	print dial.get_adjustment().get_value()
+	usb.updateVal(dial.get_adjustment().get_value(),which)
+	print usb.getVals()
 
 def dataController(button):
+	global getData 
 	getData = not getData
+	print getData
 	if not getData:
 		numpy.save('output',pos)
 
@@ -84,12 +86,12 @@ dial.connect("value_changed", updateValue,0)
 
 grid.attach(dial, 0,2,1,1)
 
-grid.attach(sbox,0,3,10,2)
+grid.attach(sbox,0,3,3,2)
 sbox.hide()
 
 data_button = Gtk.Button(label = "Collect Data")
 data_button.connect("clicked", dataController)
-grid.attach(data_button,0,4,1,1)
+grid.attach(data_button,0,5,1,1)
 
 
 
@@ -116,8 +118,8 @@ win.show_all()
 
 while True:
     if (getData):
-    	pos.append(usbComm.getVal()[0])
-
+    	pos.append(usb.getVals()[0])
+    	print(usb.getVals()[0])
 
     while Gtk.events_pending():
         Gtk.main_iteration()

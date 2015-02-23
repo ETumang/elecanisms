@@ -15,6 +15,7 @@ class usbStates:
 
     def close(self):
         self.dev = None
+
     def setMode(self, number):
         try:
             self.dev.ctrl_transfer(0x40, 0,number)
@@ -24,11 +25,18 @@ class usbStates:
 
     def updateVal(self, newVal,selector):
         try:
-            self.dev.ctrl_transfer(0x40, 1, newVal,selector)
+            self.dev.ctrl_transfer(0x40, 1, int(newVal),int(selector))
             print(newVal)
         except usb.core.USBError:
             print "Could not set parameter."
 
+    def getVals(self):
+        try:
+            ret = self.dev.ctrl_transfer(0xC0, 2, 0, 0, 4)
+        except usb.core.USBError:
+            print "Could not send GET_VALS vendor request."
+        else:
+            return [int(ret[0])+int(ret[1])*256, int(ret[2])+int(ret[3])*256]
 
 
 
